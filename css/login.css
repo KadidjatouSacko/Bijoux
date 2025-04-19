@@ -1,0 +1,499 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+}
+
+:root {
+    --rose-gold: #b76e79;
+    --rose-gold-light: #e8c2c8;
+    --rose-gold-dark: #7d4b53;
+    --cream: #fff8f0;
+    --dark-text: #3a3a3a;
+}
+
+body {
+    background-color: var(--cream);
+    color: var(--dark-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background: linear-gradient(135deg, var(--rose-gold-light), var(--rose-gold));
+    padding: 20px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.logo h1 {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 300;
+    letter-spacing: 3px;
+}
+
+.logo span {
+    display: block;
+    font-size: 1rem;
+    color: var(--cream);
+    letter-spacing: 5px;
+    margin-top: 5px;
+}
+
+/* Menu hamburger pour mobile */
+.menu-toggle {
+    display: none;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+nav li {
+    margin: 0 15px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 8px 5px;
+    position: relative;
+    transition: all 0.3s;
+}
+
+nav a:hover {
+    color: var(--cream);
+}
+
+nav a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: white;
+    transition: all 0.3s;
+    transform: translateX(-50%);
+}
+
+nav a:hover::after {
+    width: 100%;
+}
+
+/* Content area */
+.main-content {
+    flex: 1;
+    padding: 60px 0;
+}
+
+.auth-container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.auth-image {
+    flex: 1;
+    background: linear-gradient(135deg, var(--rose-gold-light), var(--rose-gold));
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-content {
+    position: relative;
+    z-index: 1;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.image-content h2 {
+    font-size: 2.2rem;
+    font-weight: 300;
+    margin-bottom: 15px;
+}
+
+.image-content p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.auth-forms {
+    flex: 1;
+    background: white;
+    padding: 40px;
+    position: relative;
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--rose-gold-light);
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 15px 0;
+    cursor: pointer;
+    color: var(--dark-text);
+    font-weight: 500;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.tab.active {
+    color: var(--rose-gold);
+}
+
+.tab::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--rose-gold);
+    transition: all 0.3s;
+}
+
+.tab.active::after {
+    width: 100%;
+}
+
+.form-container {
+    position: relative;
+    /* Augmentation de la hauteur pour accommoder tout le formulaire d'inscription */
+    min-height: 450px;
+}
+
+.form {
+    position: absolute;
+    width: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    transform: translateY(20px);
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.form.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--dark-text);
+    font-size: 0.9rem;
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--rose-gold-light);
+    border-radius: 30px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    outline: none;
+}
+
+.input-field:focus {
+    border-color: var(--rose-gold);
+}
+
+.auth-btn {
+    width: 100%;
+    background: var(--rose-gold);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+}
+
+.auth-btn:hover {
+    background: var(--rose-gold-dark);
+    transform: translateY(-3px);
+}
+
+.forgot-password {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.forgot-password a {
+    color: var(--rose-gold);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.forgot-password a:hover {
+    color: var(--rose-gold-dark);
+}
+
+.alternative-auth {
+    margin-top: 30px;
+    text-align: center;
+    position: relative;
+}
+
+.alternative-auth::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: #e0e0e0;
+}
+
+.or-text {
+    position: relative;
+    background: white;
+    padding: 0 15px;
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.social-login {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.social-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s;
+    font-size: 1.2rem;
+}
+
+.fb {
+    background: #3b5998;
+}
+
+.google {
+    background: #db4437;
+}
+
+.social-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.signup-columns {
+    display: flex;
+    gap: 15px;
+}
+
+.signup-column {
+    flex: 1;
+}
+
+footer {
+    background: var(--rose-gold-dark);
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    margin-top: auto;
+}
+
+.copyright {
+    font-size: 0.9rem;
+    color: var(--rose-gold-light);
+}
+
+/* Media Queries */
+@media (max-width: 992px) {
+    .auth-container {
+        max-width: 700px;
+    }
+
+    .image-content h2 {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-container {
+        flex-direction: column;
+        max-width: 500px;
+    }
+
+    .auth-image {
+        height: 200px;
+    }
+
+    .menu-toggle {
+        display: block;
+    }
+
+    nav {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 80%;
+        height: 100vh;
+        background: var(--rose-gold);
+        z-index: 999;
+        transition: all 0.4s ease;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 70px;
+    }
+
+    nav.active {
+        left: 0;
+    }
+
+    nav ul {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    nav li {
+        margin: 0;
+        width: 100%;
+        text-align: center;
+    }
+
+    nav a {
+        display: block;
+        padding: 15px;
+        font-size: 1.1rem;
+    }
+
+    nav a::after {
+        display: none;
+    }
+
+    .signup-columns {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .form-container {
+        min-height: 500px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-forms {
+        padding: 30px 20px;
+    }
+
+    .logo h1 {
+        font-size: 1.7rem;
+    }
+
+    .logo span {
+        font-size: 0.8rem;
+    }
+    
+    .form-container {
+        min-height: 550px;
+    }
+}
+
+/* Ajout de styles pour le scroll sur le formulaire d'inscription */
+#signup-form {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Personnalisation de la barre de défilement */
+#signup-form::-webkit-scrollbar {
+    width: 6px;
+}
+
+#signup-form::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#signup-form::-webkit-scrollbar-thumb {
+    background: var(--rose-gold-light);
+    border-radius: 10px;
+}
+
+#signup-form::-webkit-scrollbar-thumb:hover {
+    background: var(--rose-gold);
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}

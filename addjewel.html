@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un bijou | Administration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/addjewel.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>ÉLÉGANCE</h1>
+                <span>ADMINISTRATION</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="admin-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Ajouter un nouveau bijou</h2>
+            </div>
+
+            <form id="jewelForm">
+                <div class="form-card">
+                    <div class="form-section">
+                        <h3 class="form-section-title">Informations générales</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="name" class="required">Nom du bijou</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="category" class="required">Catégorie</label>
+                                <div class="input-group">
+                                    <select id="category" name="category_id" required>
+                                        <option value="">-- Sélectionner une catégorie --</option>
+                                        <!-- Les catégories seront chargées dynamiquement -->
+                                    </select>
+                                    <button type="button" class="new-category-btn" onclick="toggleNewCategoryForm()">+</button>
+                                </div>
+                                
+                                <div id="newCategoryForm" class="new-category-form">
+                                    <div class="form-group" style="margin-bottom: 15px;">
+                                        <label for="newCategory" class="required">Nouvelle catégorie</label>
+                                        <input type="text" id="newCategory" name="newCategory" placeholder="Nom de la catégorie">
+                                    </div>
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="addNewCategory()">Ajouter cette catégorie</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description" placeholder="Description détaillée du bijou..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">Tarification</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="priceTTC" class="required">Prix TTC (€)</label>
+                                <input type="number" id="priceTTC" name="priceTTC" min="0" step="0.01" required onchange="calculatePriceHT()">
+                            </div>
+                            <div class="form-group">
+                                <label for="tva" class="required">Taux de TVA (%)</label>
+                                <input type="number" id="tva" name="tva" min="0" step="0.1" value="20" required onchange="calculatePriceHT()">
+                            </div>
+                            <div class="form-group">
+                                <label for="priceHT">Prix HT (€)</label>
+                                <input type="number" id="priceHT" name="priceHT" step="0.01" readonly>
+                                <span class="form-help">Calculé automatiquement</span>
+                            </div>
+                        </div>
+                        
+                        <div class="price-calculation">
+                            <div class="price-row">
+                                <span>Prix TTC:</span>
+                                <span id="summaryTTC">0.00 €</span>
+                            </div>
+                            <div class="price-row">
+                                <span>TVA (<span id="summaryTVARate">20</span>%):</span>
+                                <span id="summaryTVA">0.00 €</span>
+                            </div>
+                            <div class="price-row">
+                                <span>Prix HT:</span>
+                                <span id="summaryHT">0.00 €</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label for="stock" class="required">Stock disponible</label>
+                            <input type="number" id="stock" name="stock" min="0" value="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">Options de couleur</h3>
+                        <div class="form-group">
+                            <label>Couleurs disponibles <span class="info-icon" data-tooltip="Sélectionnez toutes les couleurs disponibles pour ce bijou">i</span></label>
+                            <div class="color-options">
+                                <div class="color-option">
+                                    <input type="checkbox" id="color-gold" name="colors[]" value="Or" class="color-checkbox">
+                                    <label for="color-gold">Or</label>
+                                </div>
+                                <div class="color-option">
+                                    <input type="checkbox" id="color-silver" name="colors[]" value="Argent" class="color-checkbox">
+                                    <label for="color-silver">Argent</label>
+                                </div>
+                                <div class="color-option">
+                                    <input type="checkbox" id="color-rosegold" name="colors[]" value="Or rose" class="color-checkbox">
+                                    <label for="color-rosegold">Or rose</label>
+                                </div>
+                                <div class="color-option">
+                                    <input type="checkbox" id="color-platinum" name="colors[]" value="Platine" class="color-checkbox">
+                                    <label for="color-platinum">Platine</label>
+                                </div>
+                                <div class="color-option">
+                                    <input type="checkbox" id="color-bronze" name="colors[]" value="Bronze" class="color-checkbox">
+                                    <label for="color-bronze">Bronze</label>
+                                </div>
+                                <div class="color-option">
+                                    <input type="checkbox" id="color-copper" name="colors[]" value="Cuivre" class="color-checkbox">
+                                    <label for="color-copper">Cuivre</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">Images du produit</h3>
+                        <div class="form-group">
+                            <label>Ajouter des images <span class="info-icon" data-tooltip="Ajoutez la photo principale et différents angles du bijou">i</span></label>
+                            <div id="imagePreviewContainer" class="image-preview-container">
+                                <div class="add-image-container" onclick="document.getElementById('imageUpload').click()">
+                                    <span class="add-image-icon">+</span>
+                                    <input type="file" id="imageUpload" style="display: none;" accept="image/*" multiple onchange="handleImageUpload(this)">
+                                </div>
+                            </div>
+                            <p class="form-help">
+                                Pour un rendu optimal, utilisez des images carrées avec une résolution minimale de 800×800px
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="buttons">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter le bijou</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+

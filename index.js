@@ -6,6 +6,15 @@ import { router } from "./app/router.js";
 // import { authMiddleware } from "./app/middlewares/authMiddleware.js";
 // import { sessionMiddleware } from "./app/middlewares/sessionMiddleware.js"; 
 
+import { sequelize } from './sequelize-client.js'; // L'instance Sequelize
+import { Jewel } from './models/jewel.js'; // Ton modèle Jewel
+import { Category } from './models/category.js'; // Ton modèle Category
+import { Order } from './models/order.js'; // Ton modèle Order
+import { Customer } from './models/customer.js'; // Ton modèle Customer
+import { OrderHasJewel } from './models/orderHasJewel.js'; // La table de liaison
+
+// Si tu utilises des associations, assure-toi de les importer aussi
+import './associations.js'; // Si tu as un fichier où tu définis toutes les associations
 
 
 const app = express();
@@ -44,6 +53,19 @@ app.use(express.static("./public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+
+// Test de la connexion et synchronisation avec la base de données
+sequelize.authenticate()
+    .then(() => {
+        console.log("Connexion à la base de données réussie.");
+        return sequelize.sync({ alter: true }); // Met à jour la base sans supprimer les tables
+    })
+    .then(() => {
+        console.log("Base de données synchronisée avec succès !");
+    })
+    .catch((error) => {
+        console.error("Erreur lors de la connexion ou de la synchronisation :", error);
+    });
 // app.use(authMiddleware);
 app.use(router);
 
