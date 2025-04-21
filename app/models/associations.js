@@ -4,6 +4,7 @@ import { Customer } from "./customerModel.js";
 import { Order } from "./orderModel.js";
 import { OrderHasJewel } from "./OrderHasJewelModel.js";
 import { Payment } from "./paymentModel.js";
+import { Role } from "./roleModel.js";
 
 // Définir les relations entre les modèles
 
@@ -50,6 +51,13 @@ Order.hasOne(Payment, {
 });
 Payment.belongsTo(Order, {
     foreignKey: 'order_id',
+});
+
+Customer.belongsTo(Role, {
+     foreignKey: "role_id" 
+});
+Role.hasMany(Customer, {
+     foreignKey: "role_id"
 });
 
 export { Category, Jewel, Customer, Order, OrderHasJewel, Payment };

@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS "order_has_jewel" CASCADE;
 DROP TABLE IF EXISTS "order" CASCADE;
 DROP TABLE IF EXISTS "jewel" CASCADE;
 DROP TABLE IF EXISTS "customer" CASCADE;
+DROP TABLE IF EXISTS "role" CASCADE;
 DROP TABLE IF EXISTS "category" CASCADE;
 
 -- 1. Table des catégories (Bagues, Bracelets, etc.)
@@ -14,16 +15,29 @@ CREATE TABLE "category" (
     "name" VARCHAR(50) NOT NULL
 );
 
+CREATE TABLE "role" (
+    "id" SERIAL PRIMARY KEY,
+    "name" VARCHAR(50) UNIQUE NOT NULL
+);
+
 -- 2. Table des bijoux
+-- Création de la table jewel
 CREATE TABLE "jewel" (
     "id" SERIAL PRIMARY KEY,
     "name" VARCHAR(100) NOT NULL,
     "description" TEXT,
-    "price" DECIMAL(10, 2) NOT NULL,
+    "price_ttc" DECIMAL(10, 2),
+    "tva" DECIMAL(5, 2) DEFAULT 20.00,
+    "price_ht" DECIMAL(10, 2), -- calculé automatiquement
+    "taille" VARCHAR(50),      -- exemple : "16 cm", "M", etc.
+    "poids" DECIMAL(6, 2),     -- en grammes
+    "matiere" VARCHAR(50),     -- exemple : "or", "plaqué or", "argent"
+    "carat" INTEGER,           -- exemple : 18, 24
     "image" TEXT,
     "stock" INTEGER DEFAULT 0,
     "category_id" INTEGER REFERENCES "category"("id")
 );
+
 
 -- 3. Table des clients
 CREATE TABLE "customer" (
@@ -65,6 +79,22 @@ CREATE TABLE "payment" (
 );
 
 -- 7. Insertion des catégories de bijoux
+
+-- fonction pour calculer automatiquement le prix HT;
+CREATE OR REPLACE FUNCTION calcul_price_ht()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.price_ttc IS NOT NULL AND NEW.tva IS NOT NULL THEN
+    NEW.price_ht := ROUND(NEW.price_ttc / (1 + NEW.tva / 100), 2);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_calcul_price_ht
+BEFORE INSERT OR UPDATE ON "jewel"
+FOR EACH ROW
+EXECUTE FUNCTION calcul_price_ht();
 
 
 COMMIT;
