@@ -1,13 +1,10 @@
 import { Router } from "express";
-<<<<<<< HEAD
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-=======
 import { mainControlleur } from "./controlleurs/mainControlleur.js";
-import { baguesControlleur } from "./controlleurs/jewelControlleur.js";
+import { baguesControlleur } from "./controlleurs/baguesControlleur.js";
 import { braceletsControlleur } from "./controlleurs/braceletsControlleur.js";
->>>>>>> c36308dee78a20a9c13e68d7addb716051f8a371
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -35,10 +32,7 @@ const upload = multer({ storage: storagejewel })
   // }
 // });
 
-import { mainControlleur } from "./controlleurs/mainControlleur.js";
 import { jewelControlleur } from "./controlleurs/jewelControlleur.js";
-import { braceletsControlleur } from "./controlleurs/braceletsControlleur.js";
-import { baguesControlleur } from "./controlleurs/baguesControlleur.js";
 import {materialControlleur} from './controlleurs/materialControlleur.js';
 import {loginLimiter, authController } from "./controlleurs/authControlleur.js";
 import { isAdmin, isAuthenticated } from './middleware/authMiddleware.js';
@@ -53,18 +47,16 @@ router.get("/", mainControlleur.homePage);
 
 
 // Route pour afficher le formulaire d'ajout de bijou
-router.get("/ajouter-bijou", showAddJewelForm);
+router.get("/ajouter-bijou", jewelControlleur.showAddJewelForm);
 
 // Route pour ajouter un bijou dans la base de données
-router.post("/ajouter-bijou", addJewel);
+router.post("/ajouter-bijou", jewelControlleur.addJewel);
 
 // Route pour ajouter une nouvelle catégorie
-router.post("/ajouter-categorie", addNewCategory);
+router.post("/ajouter-categorie", jewelControlleur.addNewCategory);
 
 // Route pour ajouter une nouvelle matière
-router.post("/ajouter-matiere", addNewMaterial);
-
-export default router;
+router.post("/ajouter-matiere", jewelControlleur.addNewMaterial);
 
 // VOIR LES BIJOUX : 
 
@@ -160,10 +152,8 @@ router.get('/mon-compte/mes-statistiques', adminStatsController.getClientStats);
 router.get('/admin/bijoux', adminStatsController.findAll);
 
 router.get('/admin/ajouter-bijou', adminStatsController.create)
-
-router.get("/commandes", adminStatsController.ShowPageOrders)
-
-
+router.get("/commandes", adminStatsController.ShowPageOrders);
 
 
 export default router;
+
