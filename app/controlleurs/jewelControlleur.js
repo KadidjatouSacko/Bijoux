@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-import { Jewel, Category } from '../models/associations.js'; // Assure-toi que ces modèles existent et sont correctement configurés
+// import { Jewel, Category } from '../models/associations.js'; // Assure-toi que ces modèles existent et sont correctement configurés
 import slugify from 'slugify';
 import fs from 'fs';
 import path from 'path';
@@ -11,9 +10,9 @@ const { Op } = Sequelize;
 import {sequelize} from '../models/sequelize-client.js';
 import { JewelView } from '../models/jewelViewModel.js';
 import {QueryTypes} from 'sequelize'
-
-
-import { Material } from '../models/MaterialModel.js';
+import { Jewel } from "../models/jewelModel.js";
+import { Category } from "../models/categoryModel.js";  // Si tu veux récupérer les catégories
+import { Material } from "../models/MaterialModel.js";  // Si tu veux ajouter la matière dans la base de données
 import { JewelImage } from '../models/jewelImage.js';
 import { types } from 'util';
 
@@ -640,14 +639,6 @@ export const jewelControlleur = {
     }
   },
 
-};
-=======
-import { Jewel } from "../models/Jewel.js";
-import { Category } from "../models/Category.js";  // Si tu veux récupérer les catégories
-import { Material } from "../models/Material.js";  // Si tu veux ajouter la matière dans la base de données
-
-// Afficher la page d'ajout de bijou (avec les catégories disponibles)
-export const jewelControlleur ={
 
  async showAddJewelForm (req, res) {
   try {
@@ -716,6 +707,4 @@ async addNewMaterial  (req, res) {
     res.status(500).send("Erreur interne du serveur.");
   }
 }
-
 }
->>>>>>> c36308dee78a20a9c13e68d7addb716051f8a371
