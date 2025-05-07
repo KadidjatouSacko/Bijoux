@@ -3,25 +3,26 @@ import { sequelize } from "./sequelize-client.js";
 
 export class Order extends Model {}
 
-Order.init(
-    {
-        order_date: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-        },
-        status: {
-            type: DataTypes.STRING,
-            defaultValue: "en attente",
-        },
-        total: {
-            type: DataTypes.DECIMAL(10, 2),
-        },
-        customer_id: {
-            type: DataTypes.INTEGER,
-        },
+Order.init({
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    {
-        sequelize,
-        tableName: "order",
-    }
-);
+    customer_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+  }, {
+    sequelize,
+    modelName: 'Order',
+    tableName: 'orders',
+    timestamps: false,
+  });
+  
+
+

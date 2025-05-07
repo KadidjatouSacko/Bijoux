@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - ÉCLAT DORÉ</title>
+  
+  <!-- FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet"/>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  
+  <!-- Éditeur de texte riche Quill -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <body>
+    <header>
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">
+            <h1>ÉCLAT DORÉ</h1>
+            <span>ADMINISTRATION</span>
+          </div>
+          <%- include('partials/navbarre.ejs') %>
+        </div>
+      </div>
+    </header>
+  
+    <main class="container">
+      <div class="admin-header">
+        <h2>Modifier un bijou</h2>
+        <a href="/admin/bijoux" class="btn btn-secondary">
+          <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+      </div>
+      
+      <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-danger">
+        <%= error %>
+      </div>
+      <% } %>
+      
+      <% if (typeof success !== 'undefined' && success) { %>
+      <div class="alert alert-success">
+        <%= success %>
+      </div>
+      <% } %>
+      
+      <!-- Formulaire de modification -->
+      <form action="/admin/bijoux/<%= jewel.slug %>/modifier" method="POST" class="jewel-form" enctype="multipart/form-data">
+        <input type="hidden" name="_method" value="PUT">
+        
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="name">Nom du bijou *</label>
+            <input type="text" id="name" name="name" class="form-control" value="<%= jewel.name %>" required>
+          </div>
+          
+          <div class="form-group col-md-6">
+            <label for="category_id">Catégorie *</label>
+            <select id="category_id" name="category_id" class="form-control" required>
+              <option value="">Choisir une catégorie</option>
+              <% categories.forEach(category => { %>
+              <option value="<%= category.id %>" <%= jewel.category_id == category.id ? 'selected' : '' %>>
+                <%= category.name %>
+              </option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group col-md-4">
+            <label for="price_ttc">Prix TTC (€) *</label>
+            <input type="number" step="0.01" id="price_ttc" name="price_ttc" class="form-control" value="<%= jewel.price_ttc %>" required>
+          </div>
+          
+          <div class="form-group col-md-4">
+            <label for="stock">Stock disponible *</label>
+            <input type="number" id="stock" name="stock" class="form-control" value="<%= jewel.stock %>" required>
+          </div>
+          
+          <div class="form-group col-md-4">
+            <label for="reference">Référence</label>
+            <input type="text" id="reference" name="reference" class="form-control" value="<%= jewel.reference || '' %>">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="description">Description courte *</label>
+          <textarea id="description" name="description" class="form-control" rows="3" required><%= jewel.description %></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="long_description">Description longue</label>
+          <div id="editor-container"><%- jewel.long_description || '' %></div>
+          <input type="hidden" name="long_description" id="long_description_input">
+        </div>
+        
+        <!-- Galerie d'images -->
+        <div class="form-group">
+          <label>Images du produit</label>
+          <div class="image-preview-container">
+            <!-- Images existantes -->
+            <% 
+            let existingImages = [];
+            if (jewel.images && jewel.images.length > 0) {
+              existingImages = jewel.images;
+            } else if (jewel.image) {
+              existingImages = [{ id: 0, image_url: jewel.image }];
+            }
+            %>
+            
+            <% existingImages.forEach((img, index) => { %>
+              <div class="image-preview">
+                <img src="/uploads/jewels/<%= img.image_url %>" alt="Image <%= index + 1 %>">
+                <button type="button" class="remove-image" data-id="<%= img.id %>">
+                  <i class="fas fa-times"></i>
+                </button>
+                <input type="hidden" name="existing_images[]" value="<%= img.id %>">
+              </div>
+            <% }); %>
+            
+            <!-- Bouton pour ajouter une nouvelle image -->
+            <label class="add-image-btn" for="new_images">
+              <i class="fas fa-plus"></i>
+            </label>
+            <input type="file" id="new_images" name="new_images[]" class="hidden-file-input" multiple accept="image/*">
+          </div>
+          <small class="form-text text-muted">Formats acceptés: JPG, PNG. Taille max: 2MB par image.</small>
+        </div>
+        
+        <!-- Détails du produit (caractéristiques) -->
+        <div class="form-group">
+          <label>Caractéristiques du produit</label>
+          <div id="details-container">
+            <% if (jewel.details && jewel.details.length > 0) { %>
+              <% jewel.details.forEach((detail, index) => { %>
+                <div class="detail-item">
+                  <input type="text" name="detail_labels[]" class="form-control" placeholder="Libellé" value="<%= detail.label %>" required>
+                  <input type="text" name="detail_values[]" class="form-control" placeholder="Valeur" value="<%= detail.value %>" required>
+                  <span class="remove-detail"><i class="fas fa-times"></i></span>
+                </div>
+              <% }); %>
+            <% } else { %>
+              <div class="detail-item">
+                <input type="text" name="detail_labels[]" class="form-control" placeholder="Libellé" required>
+                <input type="text" name="detail_values[]" class="form-control" placeholder="Valeur" required>
+                <span class="remove-detail"><i class="fas fa-times"></i></span>
+              </div>
+            <% } %>
+          </div>
+          <button type="button" class="add-detail-btn" id="add-detail">
+            <i class="fas fa-plus"></i> Ajouter une caractéristique
+          </button>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-4">
+              <label for="material">Matière</label>
+              <input type="text" id="material" name="material" class="form-control" value="<%= jewel.material || '' %>">
+            </div>
+          
+            <div class="form-group col-md-4">
+              <label for="style">Style</label>
+              <input type="text" id="style" name="style" class="form-control" value="<%= jewel.style || '' %>">
+            </div>
+          
+            <div class="form-group col-md-4">
+              <label for="size">Taille</label>
+              <input type="text" id="size" name="size" class="form-control" value="<%= jewel.size || '' %>">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="carat">Carat / Poids</label>
+              <input type="text" id="carat" name="carat" class="form-control" value="<%= jewel.carat || '' %>">
+            </div>
+          
+            <div class="form-group col-md-6">
+              <label for="status">Statut</label>
+              <select id="status" name="status" class="form-control">
+                <option value="en_stock" <%= jewel.status === 'en_stock' ? 'selected' : '' %>>En stock</option>
+                <option value="rupture" <%= jewel.status === 'rupture' ? 'selected' : '' %>>Rupture</option>
+                <option value="precommande" <%= jewel.status === 'precommande' ? 'selected' : '' %>>Précommande</option>
+              </select>
+            </div>
+          </div>
+          
+        
+        <div class="form-group mt-4">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Enregistrer les modifications
+          </button>
+          <a href="/admin/bijoux" class="btn btn-secondary">Annuler</a>
+        </div>
+      </form>
+    </main>
+  
+    <footer>
+      <div class="container">
+        <div class="copyright">
+          <p>&copy; 2025 ÉCLAT DORÉ - Administration</p>
+        </div>
+      </div>
+    </footer>
+  
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initialisation de l'éditeur de texte riche
+        const quill = new Quill('#editor-container', {
+          theme: 'snow',
+          modules: {
+            toolbar: [
+              ['bold', 'italic', 'underline', 'strike'],
+              ['blockquote', 'code-block'],
+              [{ 'header': 1 }, { 'header': 2 }],
+              [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+              [{ 'script': 'sub' }, { 'script': 'super' }],
+              [{ 'indent': '-1' }, { 'indent': '+1' }],
+              [{ 'direction': 'rtl' }],
+              [{ 'size': ['small', false, 'large', 'huge'] }],
+              [{ 'color': [] }, { 'background': [] }],
+              [{ 'font': [] }],
+              [{ 'align': [] }],
+              ['clean']
+            ]
+          }
+        });
+        
+        // Mettre à jour le champ caché au moment de la soumission du formulaire
+        document.querySelector('.jewel-form').addEventListener('submit', function() {
+          document.getElementById('long_description_input').value = quill.root.innerHTML;
+        });
+        
+        // Ajout d'une nouvelle caractéristique
+        document.getElementById('add-detail').addEventListener('click', function() {
+          const detailsContainer = document.getElementById('details-container');
+          const newDetail = document.createElement('div');
+          newDetail.className = 'detail-item';
+          newDetail.innerHTML = `
+            <input type="text" name="detail_labels[]" class="form-control" placeholder="Libellé" required>
+            <input type="text" name="detail_values[]" class="form-control" placeholder="Valeur" required>
+            <span class="remove-detail"><i class="fas fa-times"></i></span>
+          `;
+          detailsContainer.appendChild(newDetail);
+          
+          // Ajouter l'événement pour supprimer cette caractéristique
+          newDetail.querySelector('.remove-detail').addEventListener('click', function() {
+            detailsContainer.removeChild(newDetail);
+          });
+        });
+        
+        // Supprimer une caractéristique existante
+        document.querySelectorAll('.remove-detail').forEach(button => {
+          button.addEventListener('click', function() {
+            this.closest('.detail-item').remove();
+          });
+        });
+        
+        // Prévisualisation des images
+        const fileInput = document.getElementById('new_images');
+        const previewContainer = document.querySelector('.image-preview-container');
+        const addImageButton = document.querySelector('.add-image-btn');
+        
+        fileInput.addEventListener('change', function() {
+          const files = this.files;
+          
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (!file.type.match('image.*')) continue;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const previewDiv = document.createElement('div');
+              previewDiv.className = 'image-preview';
+              previewDiv.innerHTML = `
+                <img src="${e.target.result}" alt="Nouvelle image">
+                <button type="button" class="remove-image" data-file="${file.name}">
+                  <i class="fas fa-times"></i>
+                </button>
+              `;
+              
+              // Insérer avant le bouton d'ajout
+              previewContainer.insertBefore(previewDiv, addImageButton);
+              
+              // Événement pour supprimer cette prévisualisation
+              previewDiv.querySelector('.remove-image').addEventListener('click', function() {
+                previewContainer.removeChild(previewDiv);
+              });
+            };
+            
+            reader.readAsDataURL(file);
+          }
+        });
+        
+        // Supprimer une image existante
+        document.querySelectorAll('.image-preview .remove-image').forEach(button => {
+          button.addEventListener('click', function() {
+            const imagePreview = this.closest('.image-preview');
+            const imageId = this.getAttribute('data-id');
+            
+            // Créer un champ caché pour indiquer que cette image doit être supprimée
+            const deleteInput = document.createElement('input');
+            deleteInput.type = 'hidden';
+            deleteInput.name = 'delete_images[]';
+            deleteInput.value = imageId;
+            document.querySelector('.jewel-form').appendChild(deleteInput);
+            
+            // Supprimer la prévisualisation
+            imagePreview.remove();
+          });
+        });
+      });
+    </script>
+  </body>
+  </html>

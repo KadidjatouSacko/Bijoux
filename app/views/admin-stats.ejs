@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques Bijouterie</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+</head>
+
+<%- include('partials/nav-bar-admin.ejs') %>
+
+<div class="dashboard">
+    <header>
+        <h1>Tableau de Bord Bijouterie</h1>
+        <p class="subtitle">Suivi de performance et analyse des tendances</p>
+    </header>
+    
+    <section class="filters">
+        <div class="filter-group">
+            <label for="date-range">Période:</label>
+            <div class="time-period-buttons">
+                <button class="time-btn active" data-period="week">Semaine</button>
+                <button class="time-btn" data-period="month">Mois</button>
+                <button class="time-btn" data-period="year">Année</button>
+            </div>
+        </div>
+        
+        <div class="filter-group">
+            <label for="category-filter">Catégorie:</label>
+            <select id="category-filter">
+                <option value="all">Toutes les catégories</option>
+                <% categories.forEach(category => { %>
+                    <option value="<%= category.id %>"><%= category.name %></option>
+                <% }); %>
+            </select>
+        </div>
+    </section>
+    
+    <section class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-title">Commandes</div>
+            <div class="stat-number"><%= totalOrders %></div>
+            <div id="orders-comparison">Calcul en cours...</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-title">Chiffre d'affaires</div>
+            <div class="stat-number"><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(totalRevenue) %></div>
+            <div id="revenue-comparison">Calcul en cours...</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-title">Valeur panier moyen</div>
+            <div class="stat-number"><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(averageOrderValue) %></div>
+            <div id="aov-comparison">Calcul en cours...</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-title">Nouveaux clients</div>
+            <div class="stat-number"><%= newCustomersCount %></div>
+            <div id="customers-comparison">Calcul en cours...</div>
+        </div>
+    </section>
+    
+    <section class="chart-section">
+        <h2>Ventes par catégorie</h2>
+        <div class="chart-container">
+            <canvas id="categorySalesChart"></canvas>
+        </div>
+    </section>
+    
+    <div class="chart-grid">
+        <section class="chart-section">
+            <h2>Évolution des ventes</h2>
+            <div class="chart-container">
+                <canvas id="salesTrendChart"></canvas>
+            </div>
+        </section>
+        
+        <section class="chart-section">
+            <h2>Top 5 des bijoux populaires</h2>
+            <div class="chart-container">
+                <canvas id="topJewelsChart"></canvas>
+            </div>
+        </section>
+    </div>
+    
+    <section class="table-section chart-section">
+        <h2>Bijoux en rupture de stock ou faible quantité</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom du bijou</th>
+                    <th>Catégorie</th>
+                    <th>Prix TTC</th>
+                    <th>Stock actuel</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% lowStockJewels.forEach(jewel => { %>
+                    <tr>
+                        <td><%= jewel.name %></td>
+                        <td><%= jewel.category_name %></td>
+                        <td><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(jewel.price_ttc) %></td>
+                        <td><%= jewel.stock %></td>
+                        <td>
+                            <% if(jewel.stock === 0) { %>
+                                <span class="inventory-status status-low">Rupture</span>
+                            <% } else if(jewel.stock <= 5) { %>
+                                <span class="inventory-status status-low">Faible</span>
+                            <% } else if(jewel.stock <= 10) { %>
+                                <span class="inventory-status status-medium">Moyen</span>
+                            <% } else { %>
+                                <span class="inventory-status status-good">Bon</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </section>
+    
+    <section class="chart-section">
+        <h2>Répartition des matériaux</h2>
+        <div class="chart-container">
+            <canvas id="materialsChart"></canvas>
+        </div>
+    </section>
+    
+    <section class="chart-section">
+        <h2>Statistiques de visite du site</h2>
+        <div class="chart-container">
+            <canvas id="visitsChart"></canvas>
+        </div>
+    </section>
+    
+    <div class="dashboard-footer">
+        Dernière mise à jour: <%= new Date().toLocaleString('fr-FR', { 
+            day: '2-digit', 
+            month: 'long', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute:'2-digit' 
+        }) %>
+    </div>
+</div>
+
+<script>
+    // Configuration des couleurs
+    const colors = {
+        roseGold: '#b76e79',
+        roseGoldLight: '#e8c2c8',
+        roseGoldDark: '#7d4b53',
+        cream: '#fff8f0',
+        darkText: '#3a3a3a',
+        chartColors: [
+            '#b76e79', // Rose Gold
+            '#e8c2c8', // Rose Gold Light
+            '#7d4b53', // Rose Gold Dark
+            '#d4af37', // Gold
+            '#c0c0c0', // Silver
+            '#cd7f32', // Bronze
+            '#e6be8a', // Champagne Gold
+            '#86608e', // Amethyst Purple
+            '#4b0082', // Deep Indigo
+            '#50c878'  // Emerald
+        ]
+    };
+    
+    // Fonction pour appliquer des options de style cohérentes aux graphiques
+    function getChartOptions(title = '') {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            family: "'Playfair Display', Georgia, serif",
+                            size: 12
+                        },
+                        color: colors.darkText
+                    }
+                },
+                title: {
+                    display: !!title,
+                    text: title,
+                    font: {
+                        family: "'Playfair Display', Georgia, serif",
+                        size: 16,
+                        weight: 'normal'
+                    },
+                    color: colors.roseGoldDark
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    titleFont: {
+                        family: "'Playfair Display', Georgia, serif",
+                        size: 14
+                    },
+                    bodyFont: {
+                        family: "'Playfair Display', Georgia, serif",
+                        size: 13
+                    },
+                    titleColor: colors.roseGoldDark,
+                    bodyColor: colors.darkText,
+                    borderColor: colors.roseGoldLight,
+                    borderWidth: 1,
+                    cornerRadius: 6,
+                    padding: 10
+                }
+            }
+        };
+    }
+    
+    // Données dynamiques récupérées du serveur
+    const categorySalesData = <%- JSON.stringify(categorySales) %>;
+    const salesTrendData = <%- JSON.stringify(salesTrend) %>;
+    const topJewelsData = <%- JSON.stringify(mostSoldJewels) %>;
+    const materialsData = <%- JSON.stringify(materialsDistribution) %>;
+    const visitsData = <%- JSON.stringify(visitsLast7Days) %>;
+    
+    // Graphique de ventes par catégorie
+    const ctxCategorySales = document.getElementById('categorySalesChart').getContext('2d');
+    const categorySalesChart = new Chart(ctxCategorySales, {
+        type: 'pie',
+        data: {
+            labels: categorySalesData.map(item => item.category_name),
+            datasets: [{
+                data: categorySalesData.map(item => item.total_sales),
+                backgroundColor: colors.chartColors,
+                borderColor: colors.cream,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            ...getChartOptions(),
+            plugins: {
+                ...getChartOptions().plugins,
+                legend: {
+                    ...getChartOptions().plugins.legend,
+                    position: 'right'
+                }
+            }
+        }
+    });
+    
+    // Graphique d'évolution des ventes
+    const ctxSalesTrend = document.getElementById('salesTrendChart').getContext('2d');
+    const salesTrendChart = new Chart(ctxSalesTrend, {
+        type: 'line',
+        data: {
+            labels: salesTrendData.currentYear.map(item => item.month),
+            datasets: [{
+                label: 'Ventes <%= new Date().getFullYear() %>',
+                data: salesTrendData.currentYear.map(item => item.total),
+                borderColor: colors.roseGold,
+                backgroundColor: 'rgba(183, 110, 121, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Ventes <%= new Date().getFullYear() - 1 %>',
+                data: salesTrendData.previousYear.map(item => item.total),
+                borderColor: colors.roseGoldLight,
+                borderWidth: 2,
+                borderDash: [5, 5],
+                tension: 0.4,
+                fill: false
+            }]
+        },
+        options: {
+            ...getChartOptions(),
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(232, 194, 200, 0.2)'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value);
+                        },
+                        font: {
+                            family: "'Playfair Display', Georgia, serif"
+                        },
+                        color: colors.darkText
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            family: "'Playfair Display', Georgia, serif"
+                        },
+                        color: colors.darkText
+                    }
+                }
+            }
+        }
+    });
+    
+    // Graphique des bijoux les plus populaires
+    const ctxTopJewels = document.getElementById('topJewelsChart').getContext('2d');
+    const topJewelsChart = new Chart(ctxTopJewels, {
+        type: 'bar',
+        data: {
+            labels: topJewelsData.map(item => item.name),
+            datasets: [{
+                label: 'Ventes',
+                data: topJewelsData.map(item => item.sold),
+                backgroundColor: colors.chartColors.slice(0, topJewelsData.length),
+                borderColor: colors.cream,
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            ...getChartOptions(),
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(232, 194, 200, 0.2)'
+                    },
+                    ticks: {
+                        font: {
+                            family: "'Playfair Display', Georgia, serif"
+                        },
+                        color: colors.darkText
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            family: "'Playfair Display', Georgia, serif"
+                        },
+                        color: colors.darkText
+                    }
+                }
+            }
+        }
+    });
+    
+    // Graphique de répartition des matériaux
+    const ctxMaterials = document.getElementById('materialsChart').getContext('2d');
+    const materialsChart = new Chart(ctxMaterials, {
+        type: 'doughnut',
+        data: {
+            labels: materialsData.map(item => item.material),
+            datasets: [{
+                data: materialsData.map(item => item.count),
+                backgroundColor: colors.chartColors,
+                borderColor: colors.cream,
+                borderWidth: 2
+            }]
+        },
+        options: getChartOptions()
+    });
+    
+    // Graphique des visites du site
+    const ctxVisits = document.getElementById('visitsChart').getContext('2d');
+    const visitsChart = new Chart(ctxVisits, {
+        type: 'line',
+        data: {
+            labels: visitsData.map(item => moment(item.date).format('DD/MM')),
+            datasets: [{
+                label: 'Visiteurs',
+                data: visitsData.map(item => item.visits),
+                borderColor: colors.roseGold,
+                backgroundColor: 'rgba(183, 110, 121, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Vues de produits',
+                data: visitsData.map(item => item.product_views || item.visits * 2.5), // Estimation si non disponible
+                borderColor: colors.roseGoldDark,
+                backgroundColor: 'rgba(125, 75, 83, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            ...getChartOptions(),
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(232, 194, 200, 0.2)'
+                    },
+                    ticks: {
+                        font: {
+                            family: "'Playfair Display', Georgia, serif"
+                        },
+                        color: colors.darkText
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            family: "'Playfair Display', Georgia, serif"
+                        },
+                        color: colors.darkText
+                    }
+                }
+            }
+        }
+    });
+    
+    // Gestion des boutons de période
+    const timeButtons = document.querySelectorAll('.time-btn');
+    timeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Enlever la classe active de tous les boutons
+            timeButtons.forEach(btn => btn.classList.remove('active'));
+            // Ajouter la classe active au bouton cliqué
+            this.classList.add('active');
+            
+            // Mettre à jour les données en fonction de la période
+            const period = this.dataset.period;
+            
+            // Requête AJAX pour récupérer les données actualisées
+            fetch(`/api/admin/stats?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Mise à jour des cartes statistiques
+                    document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = data.totalOrders;
+                    document.querySelector('.stat-card:nth-child(2) .stat-number').textContent = 
+                        new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(data.totalRevenue);
+                    document.querySelector('.stat-card:nth-child(3) .stat-number').textContent = 
+                        new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(data.averageOrderValue);
+                    document.querySelector('.stat-card:nth-child(4) .stat-number').textContent = data.newCustomers;
+                    
+                    // Mettre à jour les comparaisons
+                    document.getElementById('orders-comparison').textContent = `${data.ordersComparison > 0 ? '+' : ''}${data.ordersComparison}% vs période préc.`;
+                    document.getElementById('revenue-comparison').textContent = `${data.revenueComparison > 0 ? '+' : ''}${data.revenueComparison}% vs période préc.`;
+                    document.getElementById('aov-comparison').textContent = `${data.aovComparison > 0 ? '+' : ''}${data.aovComparison}% vs période préc.`;
+                    document.getElementById('customers-comparison').textContent = `${data.customersComparison > 0 ? '+' : ''}${data.customersComparison}% vs période préc.`;
+                    
+                    // Mise à jour des graphiques
+                    updateChartData(categorySalesChart, data.categorySales);
+                    updateTrendChart(salesTrendChart, data.salesTrend);
+                    updateChartData(topJewelsChart, data.topJewels);
+                    updateChartData(materialsChart, data.materialsDistribution);
+                    updateVisitsChart(visitsChart, data.visits);
+                })
+                .catch(error => console.error('Erreur lors de la récupération des données:', error));
+        });
+    });
+
+    // Filtrage par catégorie
+    document.getElementById('category-filter').addEventListener('change', function() {
+        const categoryId = this.value;
+        
+        // Requête AJAX pour filtrer par catégorie
+        fetch(`/api/admin/stats?category=${categoryId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Mise à jour des graphiques et statistiques avec les données filtrées
+                // (similaire au code des périodes)
+                updateChartData(categorySalesChart, data.categorySales);
+                updateTrendChart(salesTrendChart, data.salesTrend);
+                updateChartData(topJewelsChart, data.topJewels);
+                updateChartData(materialsChart, data.materialsDistribution);
+            })
+            .catch(error => console.error('Erreur lors du filtrage par catégorie:', error));
+    });
+    
+    // Fonctions d'aide pour la mise à jour des données des graphiques
+    function updateChartData(chart, newData) {
+        if (chart.config.type === 'pie' || chart.config.type === 'doughnut') {
+            chart.data.labels = newData.map(item => item.label || item.category_name || item.material || item.name);
+            chart.data.datasets[0].data = newData.map(item => item.value || item.total_sales || item.count || item.sold);
+        } else if (chart.config.type === 'bar') {
+            chart.data.labels = newData.map(item => item.name);
+            chart.data.datasets[0].data = newData.map(item => item.sold || item.value);
+        }
+        chart.update();
+    }
+    
+    function updateTrendChart(chart, newData) {
+        chart.data.labels = newData.currentYear.map(item => item.month);
+        chart.data.datasets[0].data = newData.currentYear.map(item => item.total);
+        chart.data.datasets[1].data = newData.previousYear.map(item => item.total);
+        chart.update();
+    }
+    
+    function updateVisitsChart(chart, newData) {
+        chart.data.labels = newData.map(item => moment(item.date).format('DD/MM'));
+        chart.data.datasets[0].data = newData.map(item => item.visits);
+        chart.data.datasets[1].data = newData.map(item => item.product_views || item.visits * 2.5);
+        chart.update();
+    }
+
+    // Initialisation des comparaisons (au chargement de la page)
+    fetch('/api/admin/stats/comparisons')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('orders-comparison').textContent = `${data.ordersComparison > 0 ? '+' : ''}${data.ordersComparison}% vs période préc.`;
+            document.getElementById('revenue-comparison').textContent = `${data.revenueComparison > 0 ? '+' : ''}${data.revenueComparison}% vs période préc.`;
+            document.getElementById('aov-comparison').textContent = `${data.aovComparison > 0 ? '+' : ''}${data.aovComparison}% vs période préc.`;
+            document.getElementById('customers-comparison').textContent = `${data.customersComparison > 0 ? '+' : ''}${data.customersComparison}% vs période préc.`;
+        })
+        .catch(error => {
+            console.error('Erreur lors de la récupération des comparaisons:', error);
+            // Valeurs par défaut en cas d'erreur
+            document.getElementById('orders-comparison').textContent = 'Données non disponibles';
+            document.getElementById('revenue-comparison').textContent = 'Données non disponibles';
+            document.getElementById('aov-comparison').textContent = 'Données non disponibles';
+            document.getElementById('customers-comparison').textContent = 'Données non disponibles';
+        });
+</script>
+</body>
+</html>

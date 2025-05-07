@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi de Commande | Bijoux Précieux</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+   <link rel="stylesheet" href="/css/commandes.css">
+</head>
+<body>
+
+    <!-- Page Content -->
+    <div class="container my-5">
+        <!-- Client View -->
+        <div id="clientView">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2 class="mb-4">Suivi de vos commandes</h2>
+                    
+                    <div class="dropdown mb-4">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="orderFilterDropdown" data-bs-toggle="dropdown">
+                            Filtrer par statut
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="orderFilterDropdown">
+                            <li><a class="dropdown-item" href="#">Toutes les commandes</a></li>
+                            <li><a class="dropdown-item" href="#">En attente</a></li>
+                            <li><a class="dropdown-item" href="#">En préparation</a></li>
+                            <li><a class="dropdown-item" href="#">Expédiée</a></li>
+                            <li><a class="dropdown-item" href="#">Livrée</a></li>
+                            <li><a class="dropdown-item" href="#">Annulée</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order List -->
+            <div class="row">
+                <% commandes.forEach((commande, index) => { %>
+                  <div class="col-12">
+                    <!-- Commande dynamique -->
+                    <div class="card mb-4">
+                      <div class="card-body">
+                        <div class="row">
+                          <div class="col-md-8">
+                            <div class="d-flex justify-content-between">
+                              <h5 class="card-title">Commande #<%= commande.numero_commande %></h5>
+                              <span class="status-badge 
+                                <% if (commande.statut === 'Livrée') { %> status-delivered 
+                                <% } else if (commande.statut === 'Expédiée') { %> status-shipped 
+                                <% } else if (commande.statut === 'Préparation') { %> status-processing 
+                                <% } else { %> status-pending <% } %>">
+                                <%= commande.statut %>
+                              </span>
+                            </div>
+                            <p class="text-muted mb-3">
+                              Passée le <%= new Date(commande.date_commande).toLocaleDateString() %> · 
+                              <%= commande.nb_articles %> article<%= commande.nb_articles > 1 ? 's' : '' %> · 
+                              <%= commande.total.toFixed(2) %> €
+                            </p>
+              
+                            <div class="d-flex overflow-auto mb-3">
+                                <% commandes.forEach(function(commande) { %>
+                                    <% if (commande.produits && Array.isArray(commande.produits)) { %>
+                                      <div class="d-flex overflow-auto mb-3">
+                                        <% commande.produits.forEach(function(produit) { %>
+                                          <img src="<%= produit.image_url %>" class="product-img me-2" alt="<%= produit.nom %>">
+                                        <% }); %>
+                                      </div>
+                                    <% } else { %>
+                                      <p>Aucun produit dans cette commande.</p>
+                                    <% } %>
+                                  <% }); %>
+                                  
+                            </div>
+              
+                            <div class="progress mb-3" style="height: 6px;">
+                              <div class="progress-bar bg-success" role="progressbar" 
+                                style="width: 
+                                  <% if (commande.statut === 'Préparation') { %> 25%
+                                  <% } else if (commande.statut === 'Expédiée') { %> 75%
+                                  <% } else if (commande.statut === 'Livrée') { %> 100%
+                                  <% } else { %> 10% <% } %>">
+                              </div>
+                            </div>
+              
+                            <div class="d-flex justify-content-between text-muted small mb-3">
+                              <span>Commande</span>
+                              <span>Préparation</span>
+                              <span>Expédition</span>
+                              <span>Livraison</span>
+                            </div>
+                          </div>
+              
+                          <div class="col-md-4 d-flex flex-column justify-content-between align-items-end">
+                            <p class="mb-3">Livraison prévue: <strong><%= new Date(commande.date_livraison_estimee).toLocaleDateString() %></strong></p>
+                            <div>
+                              <button class="btn btn-sm btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#orderDetailsModal<%= index %>">
+                                <i class="fas fa-eye"></i> Détails
+                              </button>
+                              <% if (commande.suivi_lien) { %>
+                                <a href="<%= commande.suivi_lien %>" target="_blank" class="btn btn-sm btn-primary">
+                                  <i class="fas fa-truck"></i> Suivre
+                                </a>
+                              <% } %>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+              
+                    
+                    <!-- Order 2 -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="card-title">Commande #10017</h5>
+                                        <span class="status-badge status-delivered">Livrée</span>
+                                    </div>
+                                    <p class="text-muted mb-3">Passée le 15/04/2025 · 1 article · 150,00 €</p>
+                                    
+                                    <div class="d-flex overflow-auto mb-3">
+                                        <img src="/api/placeholder/60/60" class="product-img me-2" alt="Bracelet argent">
+                                    </div>
+                                    
+                                    <div class="progress mb-3" style="height: 6px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between text-muted small mb-3">
+                                        <span>Commande</span>
+                                        <span>Préparation</span>
+                                        <span>Expédition</span>
+                                        <span>Livraison</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 d-flex flex-column justify-content-between align-items-end">
+                                    <p class="mb-3">Livrée le: <strong>22/04/2025</strong></p>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#orderDetailsModal2">
+                                            <i class="fas fa-eye"></i> Détails
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-redo"></i> Commander à nouveau
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Order 3 -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="card-title">Commande #10010</h5>
+                                        <span class="status-badge status-pending">En attente</span>
+                                    </div>
+                                    <p class="text-muted mb-3">Passée le 01/05/2025 · 2 articles · 320,50 €</p>
+                                    
+                                    <div class="d-flex overflow-auto mb-3">
+                                        <img src="/api/placeholder/60/60" class="product-img me-2" alt="Collier perles">
+                                        <img src="/api/placeholder/60/60" class="product-img me-2" alt="Boucles d'oreilles">
+                                    </div>
+                                    
+                                    <div class="progress mb-3" style="height: 6px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 25%"></div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between text-muted small mb-3">
+                                        <span>Commande</span>
+                                        <span>Préparation</span>
+                                        <span>Expédition</span>
+                                        <span>Livraison</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 d-flex flex-column justify-content-between align-items-end">
+                                    <p class="mb-3">Paiement en attente</p>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary mb-2" data-bs-toggle="modal" data-bs-target="#orderDetailsModal3">
+                                            <i class="fas fa-eye"></i> Détails
+                                        </button>
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-credit-card"></i> Payer
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin View (hidden by default, toggle with JS) -->
+        <div id="adminView" style="display: none;">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0">Gestion des commandes</h2>
+                        <button class="btn btn-outline-primary" id="toggleView">Vue client</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                  <div class="admin-filters">
+                    <div class="row">
+                      <div class="col-md-3 mb-3">
+                        <label for="statusFilter" class="form-label">Statut</label>
+                        <select class="form-select" id="statusFilter" name="statut">
+                            <option value="all">Tous</option>
+                            <% ['pending', 'processing', 'shipped', 'delivered', 'canceled'].forEach(statut => { %>
+                                <option value="<%= statut %>" <%= currentStatut === statut ? 'selected' : '' %>>
+                                    <%= statut === 'pending' ? 'En attente' :
+                                        statut === 'processing' ? 'En préparation' :
+                                        statut === 'shipped' ? 'Expédiée' :
+                                        statut === 'delivered' ? 'Livrée' :
+                                        statut === 'canceled' ? 'Annulée' : '' %>
+                                </option>
+                            <% }); %>
+                            
+                        </select>
+                      </div>
+              
+                      <div class="col-md-3 mb-3">
+                        <label for="dateFilter" class="form-label">Date</label>
+                        <select class="form-select" id="dateFilter" name="date">
+                          <option value="all">Toutes dates</option>
+                          <option value="today" <%= currentDateFilter === 'today' ? 'selected' : '' %>>Aujourd'hui</option>
+                          <option value="week" <%= currentDateFilter === 'week' ? 'selected' : '' %>>Cette semaine</option>
+                          <option value="month" <%= currentDateFilter === 'month' ? 'selected' : '' %>>Ce mois</option>
+                        </select>
+                      </div>
+              
+                      <div class="col-md-4 mb-3">
+                        <label for="searchFilter" class="form-label">Recherche</label>
+                        <input type="text" class="form-control" id="searchFilter" name="search" value="<%= currentSearch || '' %>" placeholder="ID, nom, email...">
+                      </div>
+              
+                      <div class="col-md-2 mb-3 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" type="submit">Filtrer</button>
+                      </div>
+                    </div>
+                  </div>
+              
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead class="table-light">
+                        <tr>
+                          <th>ID</th>
+                          <th>Client</th>
+                          <th>Date</th>
+                          <th>Total</th>
+                          <th>Statut</th>
+                          <th>Paiement</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% commandes.forEach(commande => { %>
+                          <tr>
+                            <td>#<%= commande.numero_commande %></td>
+                            <td><%= commande.nom_client %></td>
+                            <td><%= new Date(commande.date_commande).toLocaleDateString() %></td>
+                            <td><%= commande.total.toFixed(2).replace('.', ',') %> €</td>
+                            <td>
+                              <span class="status-badge 
+                                <%= commande.statut === 'Expédiée' ? 'status-shipped' :
+                                    commande.statut === 'En préparation' ? 'status-processing' :
+                                    commande.statut === 'Livrée' ? 'status-delivered' :
+                                    commande.statut === 'Annulée' ? 'status-canceled' :
+                                    'status-pending' %>">
+                                <%= commande.statut %>
+                              </span>
+                            </td>
+                            <td>
+                              <span class="badge <%= commande.paiement === 'Payée' ? 'bg-success' : 'bg-warning' %>">
+                                <%= commande.paiement %>
+                              </span>
+                            </td>
+                            <td>
+                              <button class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></button>
+                              <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></button>
+                              <button class="btn btn-sm btn-outline-info"><i class="fas fa-print"></i></button>
+                            </td>
+                          </tr>
+                        <% }) %>
+                      <!-- </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div> -->
+                                     <tr>
+                                    <td>#10021</td>
+                                    <td>Sophie Lambert</td>
+                                    <td>01/05/2025</td>
+                                    <td>156,50 €</td>
+                                    <td><span class="status-badge status-pending">En attente</span></td>
+                                    <td><span class="badge bg-warning text-dark">En attente</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-info"><i class="fas fa-print"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#10020</td>
+                                    <td>Pierre Dubois</td>
+                                    <td>30/04/2025</td>
+                                    <td>320,75 €</td>
+                                    <td><span class="status-badge status-delivered">Livrée</span></td>
+                                    <td><span class="badge bg-success">Payée</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-info"><i class="fas fa-print"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>#10019</td>
+                                    <td>Emma Bernard</td>
+                                    <td>28/04/2025</td>
+                                    <td>79,99 €</td>
+                                    <td><span class="status-badge status-canceled">Annulée</span></td>
+                                    <td><span class="badge bg-danger">Remboursée</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></button>
+                                        <button class="btn btn-sm btn-outline-info"><i class="fas fa-print"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <nav>
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1"><i class="fas fa-chevron-left"></i></a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Order Details Modal 1 -->
+        <% commandes.forEach(commande => { %>
+            <div class="modal fade" id="orderDetailsModal<%= commande.numero_commande %>" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Détails de la commande #<%= commande.numero_commande %></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="order-summary">
+                                        <h4>Informations</h4>
+                                        <p><strong>Date de commande :</strong> <%= new Date(commande.date_commande).toLocaleDateString() %></p>
+                                        <p><strong>Statut :</strong> 
+                                            <span class="status-badge 
+                                                <%= commande.statut === 'Expédiée' ? 'status-shipped' :
+                                                    commande.statut === 'En préparation' ? 'status-processing' :
+                                                    commande.statut === 'Livrée' ? 'status-delivered' :
+                                                    commande.statut === 'Annulée' ? 'status-canceled' :
+                                                    'status-pending' %>">
+                                            <%= commande.statut %>
+                                            </span>
+                                        </p>
+                                        <p><strong>Paiement :</strong> <%= commande.mode_paiement %></p>
+                                        <p><strong>Numéro de suivi :</strong> <%= commande.numero_suivi %></p>
+                                    </div>
+                                    
+                                    <div class="order-summary">
+                                        <h4>Adresse de livraison</h4>
+                                        <p><strong><%= commande.client_nom %></strong><br>
+                                        <%= commande.adresse_livraison %><br>
+                                        <%= commande.ville_livraison %><br>
+                                        <%= commande.code_postal_livraison %><br>
+                                        <%= commande.pays_livraison %><br>
+                                        Tél: <%= commande.telephone_livraison %></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="order-summary">
+                                        <h4>Résumé de la commande</h4>
+                                
+                                        <% 
+                                            const sousTotal = (typeof commande.sous_total === 'number' && !isNaN(commande.sous_total)) ? commande.sous_total : 0;
+                                            const tva = (typeof commande.tva === 'number' && !isNaN(commande.tva)) ? commande.tva : 0;
+                                            const fraisLivraison = (typeof commande.frais_livraison === 'number' && !isNaN(commande.frais_livraison)) ? commande.frais_livraison : 0;
+                                            const total = (typeof commande.total === 'number' && !isNaN(commande.total)) ? commande.total : 0;
+                                        %>
+                                
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Sous-total</span>
+                                            <span><%= sousTotal.toFixed(2).replace('.', ',') %> €</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>TVA (20%)</span>
+                                            <span><%= tva.toFixed(2).replace('.', ',') %> €</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Livraison</span>
+                                            <span><%= fraisLivraison.toFixed(2).replace('.', ',') %> €</span>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between">
+                                            <span><strong>Total</strong></span>
+                                            <span><strong><%= total.toFixed(2).replace('.', ',') %> €</strong></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+        
+
+                    
+                    <div class="order-summary">
+                        <h4>Articles</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Produit</th>
+                                        <th>Prix unitaire</th>
+                                        <th>Quantité</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="/api/placeholder/60/60" class="product-img me-3" alt="Bague diamant">
+                                                <div>
+                                                    <p class="jewel-name mb-0">Bague Diamant Solitaire</p>
+                                                    <small class="text-muted">Or 18 carats</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>120,00 €</td>
+                                        <td>1</td>
+                                        <td>120,00 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="/api/placeholder/60/60" class="product-img me-3" alt="Collier or">
+                                                <div>
+                                                    <p class="jewel-name mb-0">Collier Chaîne Fine</p>
+                                                    <small class="text-muted">Or 14 carats, 42cm</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>85,90 €</td>
+                                        <td>1</td>
+                                        <td>85,90 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="/api/placeholder/60/60" class="product-img me-3" alt="Boucles d'oreilles">
+                                                <div>
+                                                    <p class="jewel-name mb-0">Boucles d'Oreilles Perles</p>
+                                                    <small class="text-muted">Argent 925, Perles d'eau douce</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>40,00 €</td>
+                                        <td>1</td>
+                                        <td>40,00 €</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#trackingModal1">Suivre la livraison</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal 2 -->
+    <div class="modal fade" id="orderDetailsModal2" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Détails de la commande #10017</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="order-summary">
+                                <h4>Informations</h4>
+                                <p><strong>Date de commande :</strong> 15/04/2025</p>
+                                <p><strong>Statut :</strong> <span class="status-badge status-delivered">Livrée</span></p>
+                                <p><strong>Paiement :</strong> PayPal</p>
+                                <p><strong>Numéro de suivi :</strong> LP12345678FR</p>
+                            </div>
+                            
+                            <div class="order-summary">
+                                <h4>Adresse de livraison</h4>
+                                <p><strong>Marie Dupont</strong><br>
+                                123 Avenue des Fleurs<br>
+                                75008 Paris<br>
+                                France<br>
+                                Tél: 06 12 34 56 78</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="order-summary">
+                                <h4>Résumé de la commande</h4>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Sous-total</span>
+                                    <span>125,00 €</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>TVA (20%)</span>
+                                    <span>25,00 €</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Livraison</span>
+                                    <span>0,00 €</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <span><strong>Total</strong></span>
+                                    <span><strong>150,00 €</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-summary">
+                        <h4>Articles</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Produit</th>
+                                        <th>Prix unitaire</th>
+                                        <th>Quantité</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="/api/placeholder/60/60" class="product-img me-3" alt="Bracelet argent">
+                                                <div>
+                                                    <p class="jewel-name mb-0">Bracelet Maille Vénitienne</p>
+                                                    <small class="text-muted">Argent 925, 19cm</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>150,00 €</td>
+                                        <td>1</td>
+                                        <td>150,00 €</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary">Commander à nouveau</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal 3 -->
+    <div class="modal fade" id="orderDetailsModal3" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Détails de la commande #10010</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Votre paiement est en attente. Veuillez finaliser votre commande pour lancer la préparation.
+                    </div>
+                
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="order-summary">
+                                <h4>Informations</h4>
+                                <p><strong>Date de commande :</strong> 01/05/2025</p>
+                                <p><strong>Statut :</strong> <span class="status-badge status-pending">En attente</span></p>
+                                <p><strong>Paiement :</strong> En attente</p>
+                            </div>
+                            
+                            <div class="order-summary">
+                                <h4>Adresse de livraison</h4>
+                                <p><strong>Marie Dupont</strong><br>
+                                123 Avenue des Fleurs<br>
+                                75008 Paris<br>
+                                France<br>
+                                Tél: 06 12 34 56 78</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="order-summary">
+                                <h4>Résumé de la commande</h4>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Sous-total</span>
+                                    <span>267,08 €</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>TVA (20%)</span>
+                                    <span>53,42 €</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Livraison</span>
+                                    <span>0,00 €</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <span><strong>Total</strong></span>
+                                    <span><strong>320,50 €</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-summary">
+                        <h4>Articles</h4>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Produit</th>
+                                        <th>Prix unitaire</th>
+                                        <th>Quantité</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="/api/placeholder/60/60" class="product-img me-3" alt="Collier perles">
+                                                <div>
+                                                    <p class="jewel-name mb-0">Collier Perles Akoya</p>
+                                                    <small class="text-muted">Perles naturelles, fermoir or 18 carats</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>250,50 €</td>
+                                        <td>1</td>
+                                        <td>250,50 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="/api/placeholder/60/60" class="product-img me-3" alt="Boucles d'oreilles">
+                                                <div>
+                                                    <p class="jewel-name mb-0">Boucles d'Oreilles Créoles</p>
+                                                    <small class="text-muted">Or 9 carats</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>70,00 €</td>
+                                        <td>1</td>
+                                        <td>70,00 €</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary">Procéder au paiement</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracking Modal 1 -->
+    <!-- Tracking Modal 1 -->
+    <% commandes.forEach(function(commande) { %>
+        <div class="modal fade" id="trackingModal<%= commande.numero_commande %>" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Suivi de livraison - Commande #<%= commande.numero_commande %></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-4">
+                            <p class="mb-2"><strong>Numéro de suivi:</strong> <%= commande.numero_suivi %></p>
+                            <p class="mb-4"><strong>Transporteur:</strong> <%= commande.transporteur %></p>
+    
+                            <div class="progress mb-3" style="height: 10px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: <%= commande.progression %>%" 
+                                     aria-valuenow="<%= commande.progression %>" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+    
+                            <p class="text-center mb-0"><%= commande.status_suivi %></p>
+                            <p class="text-center mb-4">
+                                <strong>Livraison prévue le 
+                                    <%= new Date(commande.date_livraison_prevue).toLocaleDateString() %>
+                                </strong>
+                            </p>
+                        </div>
+    
+                        <div class="order-timeline">
+                            <% if (commande.timeline) { %>
+                                <% commande.timeline.forEach(function(event) { %>
+                                    <div class="timeline-item">
+                                        <div class="timeline-badge <%= event.statut === 'active' ? 'active' : '' %>"></div>
+                                        <div class="timeline-content">
+                                            <%= event.description %>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <p>Aucun événement de suivi disponible.</p>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% }); %>
+    
+
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <a href="<%= commandes.url_suivi_transporteur %>" target="_blank" class="btn btn-primary">Suivre sur le site du transporteur</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Footer -->
+    <footer class="mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5>Bijoux Précieux</h5>
+                    <p>Créations artisanales de bijoux d'exception depuis 1985.</p>
+                    <div class="d-flex">
+                        <a href="#" class="me-3 text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="me-3 text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="me-3 text-white"><i class="fab fa-pinterest"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h6>Informations</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white-50">À propos</a></li>
+                        <li><a href="#" class="text-white-50">CGV</a></li>
+                        <li><a href="#" class="text-white-50">Confidentialité</a></li>
+                        <li><a href="#" class="text-white-50">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h6>Service client</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white-50">FAQ</a></li>
+                        <li><a href="#" class="text-white-50">Retours</a></li>
+                        <li><a href="#" class="text-white-50">Livraison</a></li>
+                        <li><a href="#" class="text-white-50">Garantie</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h6>Newsletter</h6>
+                    <p class="small">Inscrivez-vous pour recevoir nos offres et nouveautés</p>
+                    <div class="input-group">
+                        <input type="email" class="form-control" placeholder="Votre email">
+                        <button class="btn btn-primary" type="button">S'inscrire</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <p class="text-center text-white-50 small mb-0">© 2025 Bijoux Précieux. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Toggle between client and admin views (for demo purposes)
+        document.addEventListener('DOMContentLoaded', function() {
+            const clientView = document.getElementById('clientView');
+            const adminView = document.getElementById('adminView');
+            const toggleButton = document.getElementById('toggleView');
+            
+            if (toggleButton) {
+                toggleButton.addEventListener('click', function() {
+                    if (adminView.style.display === 'none') {
+                        adminView.style.display = 'block';
+                        clientView.style.display = 'none';
+                        toggleButton.textContent = 'Vue client';
+                    } else {
+                        adminView.style.display = 'none';
+                        clientView.style.display = 'block';
+                        toggleButton.textContent = 'Vue admin';
+                    }
+                });
+            }
+            
+            // Pour une démo, ajoutons un bouton admin dans le coin supérieur droit
+            const adminAccessBtn = document.createElement('button');
+            adminAccessBtn.className = 'btn btn-sm btn-outline-secondary position-fixed';
+            adminAccessBtn.style.top = '10px';
+            adminAccessBtn.style.right = '10px';
+            adminAccessBtn.innerHTML = '<i class="fas fa-lock"></i> Admin';
+            adminAccessBtn.addEventListener('click', function() {
+                if (adminView.style.display === 'none' || adminView.style.display === '') {
+                    adminView.style.display = 'block';
+                    clientView.style.display = 'none';
+                    toggleButton.textContent = 'Vue client';
+                }
+            });
+            document.body.appendChild(adminAccessBtn);
+            
+            // Simuler un système d'onglets actifs
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        });
+        
+        // Fonction pour mettre à jour le statut d'une commande (pour l'admin)
+        function updateOrderStatus(orderId, status) {
+            // Ici, vous implémenterez l'appel API pour mettre à jour le statut
+            console.log(`Mise à jour du statut de la commande ${orderId} à ${status}`);
+            // Simuler une mise à jour réussie
+            alert(`Statut de la commande ${orderId} mis à jour avec succès!`);
+        }
+    </script>
+</body>
+</html>

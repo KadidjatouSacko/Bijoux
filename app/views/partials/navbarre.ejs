@@ -1,0 +1,235 @@
+<link rel="stylesheet" href="/css/nav.css">
+<nav id="mobileNav" class="navbar client-navbar">
+  <div class="nav-container">
+      <!-- Logo et bouton hamburger pour mobile -->
+      <div class="nav-header">
+          <a href="/" class="logo">
+              <h1>Eclat Doré</h1> <span>Bijoux précieux</span>
+          </a>
+          <button class="menu-toggle" id="menuToggle">
+              <i class="fas fa-bars"></i>
+          </button>
+      </div>
+      
+      <!-- Menu de navigation -->
+      <div class="nav-menu" id="navMenu">
+          <ul class="nav-links">
+              <li><a href="/"><i class="fas fa-home"></i> Accueil</a></li>
+              <li><a href="/bijoux/bracelets"><i class="fas fa-hand-sparkles"></i> Bracelets</a></li>
+              <li><a href="/bijoux/colliers"><i class="fas fa-gem"></i> Colliers</a></li>
+              <li><a href="/bijoux/bagues"><i class="fas fa-ring"></i> Bagues</a></li>
+              <li><a href="/bijoux/promotions"><i class="fas fa-tag"></i> Promotions</a></li>
+              <li><a href="/contact"><i class="fas fa-envelope"></i> Contact</a></li>
+          </ul>
+          
+          <!-- Icônes pour le profil et le panier -->
+          <!-- Menu utilisateur avec contrôle du clic (client) -->
+          <div class="nav-icons">
+            <a href="/panier" class="cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-badge" id="cartCount"><%= user && user.cartItems ? user.cartItems.length : 0 %></span>
+            </a>
+        
+            <div class="user-dropdown">
+                <button class="dropdown-toggle" id="userDropdownToggle">
+                    <i class="fas fa-user"></i>
+                </button>
+                <div class="dropdown-menu" id="userDropdownMenu">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <!-- Si l'utilisateur est connecté -->
+                        <a href="/profil"><i class="fas fa-user-circle"></i> Mon profil</a>
+                        <a href="/commandes"><i class="fas fa-shopping-bag"></i> Mes commandes</a>
+                        <a href="/favoris"><i class="fas fa-heart"></i> Mes favoris</a>
+                        <a href="/admin/suivi-client">Suivi clients</a>
+                        <a href="/admin/stats">Statistiques</a>
+                        <a href="/ajouter-bijou">ajouter un bijou</a>
+                        <a href="/deconnexion"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+                        <p class="user-status">Connecté en tant que <%= user.name %></p>
+                    <% } else { %>
+                        <!-- Si l'utilisateur n'est pas connecté -->
+                        <a href="/connexion-inscription"><i class="fas fa-sign-in-alt"></i> Connexion / Inscription</a>
+                        <p class="user-status">Non connecté</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+          </div>
+      </div>
+  </div>
+</nav>
+  
+  
+  
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Menu hamburger pour mobile (client)
+      const menuToggle = document.getElementById('menuToggle');
+      const navMenu = document.getElementById('navMenu');
+      
+      if (menuToggle && navMenu) {
+          menuToggle.addEventListener('click', function() {
+              navMenu.classList.toggle('active');
+          });
+      }
+      
+      // Menu hamburger pour mobile (admin)
+      const adminMenuToggle = document.getElementById('adminMenuToggle');
+      const adminNavMenu = document.getElementById('adminNavMenu');
+      
+      if (adminMenuToggle && adminNavMenu) {
+          adminMenuToggle.addEventListener('click', function() {
+              adminNavMenu.classList.toggle('active');
+          });
+      }
+      
+      // Menu utilisateur avec contrôle du clic (client)
+      const userDropdownToggle = document.getElementById('userDropdownToggle');
+      const userDropdownMenu = document.getElementById('userDropdownMenu');
+      let isDropdownOpen = false;
+      
+      if (userDropdownToggle && userDropdownMenu) {
+          // Ouvrir/fermer au clic
+          userDropdownToggle.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              isDropdownOpen = !isDropdownOpen;
+              
+              if (isDropdownOpen) {
+                  userDropdownMenu.classList.add('active');
+              } else {
+                  userDropdownMenu.classList.remove('active');
+              }
+          });
+          
+          // Gérer le survol de la souris (pour desktop)
+          if (window.innerWidth > 768) {
+              const userDropdown = document.querySelector('.user-dropdown');
+              
+              if (userDropdown) {
+                  userDropdown.addEventListener('mouseenter', function() {
+                      userDropdownMenu.classList.add('active');
+                      isDropdownOpen = true;
+                  });
+                  
+                  // Délai avant de fermer pour éviter les fermetures accidentelles
+                  let dropdownTimeout;
+                  
+                  userDropdown.addEventListener('mouseleave', function() {
+                      // Attendre avant de fermer pour permettre à l'utilisateur de déplacer la souris vers le menu
+                      dropdownTimeout = setTimeout(function() {
+                          userDropdownMenu.classList.remove('active');
+                          isDropdownOpen = false;
+                      }, 200);
+                  });
+                  
+                  userDropdownMenu.addEventListener('mouseenter', function() {
+                      // Annuler la fermeture si la souris entre dans le menu
+                      clearTimeout(dropdownTimeout);
+                  });
+                  
+                  userDropdownMenu.addEventListener('mouseleave', function() {
+                      // Fermer le menu quand la souris quitte le menu déroulant
+                      userDropdownMenu.classList.remove('active');
+                      isDropdownOpen = false;
+                  });
+              }
+          }
+      }
+      
+      // Menu administrateur avec contrôle du clic
+      const adminDropdownToggle = document.getElementById('adminDropdownToggle');
+      const adminDropdownMenu = document.getElementById('adminDropdownMenu');
+      let isAdminDropdownOpen = false;
+      
+      if (adminDropdownToggle && adminDropdownMenu) {
+          // Ouvrir/fermer au clic
+          adminDropdownToggle.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              isAdminDropdownOpen = !isAdminDropdownOpen;
+              
+              if (isAdminDropdownOpen) {
+                  adminDropdownMenu.classList.add('active');
+              } else {
+                  adminDropdownMenu.classList.remove('active');
+              }
+          });
+          
+          // Gérer le survol de la souris (pour desktop)
+          if (window.innerWidth > 768) {
+              const adminDropdown = adminDropdownToggle.closest('.user-dropdown');
+              
+              if (adminDropdown) {
+                  adminDropdown.addEventListener('mouseenter', function() {
+                      adminDropdownMenu.classList.add('active');
+                      isAdminDropdownOpen = true;
+                  });
+                  
+                  let adminDropdownTimeout;
+                  
+                  adminDropdown.addEventListener('mouseleave', function() {
+                      adminDropdownTimeout = setTimeout(function() {
+                          adminDropdownMenu.classList.remove('active');
+                          isAdminDropdownOpen = false;
+                      }, 200);
+                  });
+                  
+                  adminDropdownMenu.addEventListener('mouseenter', function() {
+                      clearTimeout(adminDropdownTimeout);
+                  });
+                  
+                  adminDropdownMenu.addEventListener('mouseleave', function() {
+                      adminDropdownMenu.classList.remove('active');
+                      isAdminDropdownOpen = false;
+                  });
+              }
+          }
+      }
+      
+      // Fermer les menus déroulants si on clique ailleurs sur la page
+      document.addEventListener('click', function(e) {
+          if (isDropdownOpen && userDropdownMenu && !userDropdownToggle.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+              userDropdownMenu.classList.remove('active');
+              isDropdownOpen = false;
+          }
+          
+          if (isAdminDropdownOpen && adminDropdownMenu && !adminDropdownToggle.contains(e.target) && !adminDropdownMenu.contains(e.target)) {
+              adminDropdownMenu.classList.remove('active');
+              isAdminDropdownOpen = false;
+          }
+      });
+      
+      // Mettre à jour le compteur du panier
+      function updateCartCount() {
+        const cartBadge = document.getElementById('cartCount');
+    if (cartBadge) {
+        // Effet de pulse lorsque le compteur change
+        cartBadge.classList.add('pulse');
+        setTimeout(() => {
+            cartBadge.classList.remove('pulse');
+        }, 600);
+    }
+}
+      
+      // Appeler cette fonction au chargement
+      updateCartCount();
+      
+      // Afficher/masquer le tableau de bord admin (pour démonstration)
+      const adminLink = document.querySelector('a[href="/admin/dashboard"]');
+      const adminDashboard = document.getElementById('adminDashboardPreview');
+      
+      if (adminLink && adminDashboard) {
+          adminLink.addEventListener('click', function(e) {
+              e.preventDefault();
+              if (adminDashboard.style.display === 'none') {
+                  adminDashboard.style.display = 'flex';
+              } else {
+                  adminDashboard.style.display = 'none';
+              }
+          });
+      }
+  });
+</script>

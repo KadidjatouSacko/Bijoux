@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bracelets - Éclat Doré</title>
+   
+    <link rel="stylesheet" href="/css/bracelets.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <%- include('partials/navbarre.ejs') %>
+            <div class="overlay" id="overlay"></div>
+        </div>
+    </header>
+
+    <section class="page-banner">
+        <div class="banner-content">
+            <h2>Nos Bracelets</h2>
+            <p>Des créations raffinées pour sublimer votre poignet</p>
+        </div>
+    </section>
+
+    <section class="category-intro">
+        <div class="container">
+            <div class="intro-content">
+                <h3>Élégance et Finesse</h3>
+                <p>Notre collection de bracelets allie délicatesse et caractère. Chaque bracelet est conçu pour vous accompagner au quotidien et apporter une touche d'éclat à toutes vos tenues.</p>
+            </div>
+            <div class="filter-controls">
+                <div class="filter-dropdown">
+                    <button class="filter-btn">Filtrer <i class="fas fa-chevron-down"></i></button>
+                    <div class="filter-options">
+                        <div class="filter-group">
+                                <!-- Matériau -->
+<div class="filter-group">
+    <h4>Matériau</h4>
+    <% materials.forEach(m => { %>
+      <label>
+        <input type="checkbox" name="matiere" value="<%= m %>"
+          <%= filters.matiere === m ? 'checked' : '' %> >
+        <%= m %>
+                                </label>
+                                <% }) %>
+                            </div>
+                            
+                            <!-- Style -->
+                            <div class="filter-group">
+                                <h4>Style</h4>
+                                <% styles.forEach(s => { %>
+                                <label>
+                                    <input type="checkbox" name="style" value="<%= s %>"
+                                    <%= filters.style === s ? 'checked' : '' %> >
+                                    <%= s %>
+                                </label>
+                                <% }) %>
+                            </div>
+  
+                        </div>
+                        <button id="applyFilters" class="apply-filters-btn">Appliquer les filtres</button>
+                    </div>
+                </div>
+                <div class="sort-dropdown">
+                    <button class="sort-btn">Trier par <i class="fas fa-chevron-down"></i></button>
+                    <div class="sort-options">
+                        <a href="?sortBy=popularity" class="sort-option <%= filters.sortBy === 'popularity' ? 'active' : '' %>">Popularité</a>
+                        <a href="?sortBy=price_asc" class="sort-option <%= filters.sortBy === 'price_asc' ? 'active' : '' %>">Prix croissant</a>
+                        <a href="?sortBy=price_desc" class="sort-option <%= filters.sortBy === 'price_desc' ? 'active' : '' %>">Prix décroissant</a>
+                        <a href="?sortBy=newest" class="sort-option <%= filters.sortBy === 'newest' || !filters.sortBy ? 'active' : '' %>">Nouveautés</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="products">
+        <div class="container">
+            <div class="products-grid">
+                <% bracelets.forEach(bracelet => { %>
+                    <div class="product-card">
+                        <% if (bracelet.badge) { %>
+                            <div class="product-badge <%= bracelet.badge.type %>"><%= bracelet.badge.text %></div>
+                        <% } %>
+    
+                        <div class="product-img">
+                            <img src="/uploads/jewels/<%= bracelet.image %>" alt="">
+                        </div>
+    
+                        <div class="product-info">
+                            <h4 class="product-name"><%= bracelet.name %></h4>
+                            <p class="product-desc"><%= bracelet.description %></p>
+    
+                            <% if (bracelet.discount) { %>
+                                <div class="price-container">
+                                    <p class="product-price"><%= (bracelet.price * (1 - bracelet.discount / 100)).toFixed(2) %> €</p>
+                                    <p class="product-old-price"><%= bracelet.price.toFixed(2) %> €</p>
+                                </div>
+                            <% } else { %>
+                                <% if (bracelet.price && typeof bracelet.price === 'number') { %>
+                                    <p class="product-price"><%= bracelet.price.toFixed(2) %> €</p>
+                                <% } else { %>
+                                    <p class="product-price">Prix indisponible</p>
+                                <% } %>
+                            <% } %>
+    
+                            <div class="product-actions">
+                                <button class="product-btn add-to-cart-btn" data-bracelet-id="<%= bracelet.id %>" data-bracelet-name="<%= bracelet.name %>">
+                                    <i class="fas fa-shopping-cart"></i> Ajouter au panier
+                                </button>
+                                
+                                <a href="/bijoux/<%= bracelet.slug %>" class="product-btn view-bracelet-btn">
+                                    <i class="fas fa-eye"></i> Voir le bijou <%= bracelet.slug %>
+                                </a>
+                                
+                                <button class="wishlist-btn" data-bracelet-id="<%= bracelet.id %>">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    </section>
+    
+            
+            <% if (totalPages > 1) { %>
+                <div class="pagination">
+                    <% if (currentPage > 1) { %>
+                        <a href="?page=<%= currentPage - 1 %>&sortBy=<%= filters.sortBy %>" class="page-link prev"><i class="fas fa-chevron-left"></i></a>
+                    <% } %>
+                    
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <% if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) { %>
+                            <a href="?page=<%= i %>&sortBy=<%= filters.sortBy %>" 
+                               class="page-link <%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+                        <% } else if (i === currentPage - 2 || i === currentPage + 2) { %>
+                            <span class="page-dots">...</span>
+                        <% } %>
+                    <% } %>
+                    
+                    <% if (currentPage < totalPages) { %>
+                        <a href="?page=<%= currentPage + 1 %>&sortBy=<%= filters.sortBy %>" class="page-link next"><i class="fas fa-chevron-right"></i></a>
+                    <% } %>
+                </div>
+            <% } %>
+        </div>
+    </section>
+
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter-content">
+                <div class="section-title">
+                    <h3>Restez informée</h3>
+                </div>
+                <p>Inscrivez-vous à notre newsletter pour recevoir en avant-première nos nouvelles collections et offres exclusives.</p>
+                <form class="newsletter-form">
+                    <input type="email" class="newsletter-input" placeholder="Votre adresse email" required>
+                    <button type="submit" class="newsletter-btn">S'inscrire</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        
+    </footer>
+
+    <a href="#" class="back-to-top" id="backToTop">
+        <i class="fas fa-chevron-up"></i>
+    </a>
+
+    <script>
+
+        
+        // Menu mobile toggle
+const menuToggle = document.getElementById('menuToggle');
+const mobileNav = document.getElementById('mobileNav');
+const overlay = document.getElementById('overlay');
+const backToTop = document.getElementById('backToTop');
+
+menuToggle.addEventListener('click', function() {
+    mobileNav.classList.toggle('active');
+    overlay.classList.toggle('active');
+    
+    if (mobileNav.classList.contains('active')) {
+        menuToggle.innerHTML = '<i class="fas fa-times"></i>';
+    } else {
+        menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+    }
+});
+
+overlay.addEventListener('click', function() {
+    mobileNav.classList.remove('active');
+    overlay.classList.remove('active');
+    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+});
+
+// Back to top button
+window.addEventListener('scroll', function() {
+    if (window.pageYOffset > 300) {
+        backToTop.classList.add('visible');
+    } else {
+        backToTop.classList.remove('visible');
+    }
+});
+
+// Filter and sort dropdowns
+const filterBtn = document.querySelector('.filter-btn');
+const filterOptions = document.querySelector('.filter-options');
+const sortBtn = document.querySelector('.sort-btn');
+const sortOptions = document.querySelector('.sort-options');
+
+filterBtn.addEventListener('click', function() {
+    filterOptions.classList.toggle('active');
+    sortOptions.classList.remove('active');
+});
+
+sortBtn.addEventListener('click', function() {
+    sortOptions.classList.toggle('active');
+    filterOptions.classList.remove('active');
+});
+
+// Close menus when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.filter-dropdown') && filterOptions.classList.contains('active')) {
+        filterOptions.classList.remove('active');
+    }
+    
+    if (!e.target.closest('.sort-dropdown') && sortOptions.classList.contains('active')) {
+        sortOptions.classList.remove('active');
+    }
+});
+
+// Appliquer les filtres lors du clic sur le bouton
+document.getElementById('applyFilters').addEventListener('click', function() {
+    const materialCheckboxes = document.querySelectorAll('input[name="matiere"]:checked');
+    const styleCheckboxes = document.querySelectorAll('input[name="style"]:checked');
+    
+    const materials = Array.from(materialCheckboxes).map(cb => cb.value);
+    const styles = Array.from(styleCheckboxes).map(cb => cb.value);
+    
+    let url = '?';
+    
+    if (materials.length > 0) {
+        url += materials.map(m => `matiere=${encodeURIComponent(m)}`).join('&') + '&';
+    }
+    
+    if (styles.length > 0) {
+        url += styles.map(s => `style=${encodeURIComponent(s)}`).join('&') + '&';
+    }
+    
+    // Ajouter l'option de tri si elle existe déjà
+    const urlParams = new URLSearchParams(window.location.search);
+    const sortBy = urlParams.get('sortBy');
+    if (sortBy) {
+        url += `sortBy=${sortBy}&`;
+    }
+    
+    // Supprimer le dernier & si présent
+    if (url.endsWith('&')) {
+        url = url.slice(0, -1);
+    }
+    
+    window.location.href = url;
+});
+
+// Gestion de l'ajout au panier - Version corrigée
+document.addEventListener('DOMContentLoaded', function() {
+    // Sélectionner tous les boutons d'ajout au panier
+    const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+    
+    // Fonction pour afficher une notification
+    function showNotification(message, title, isSuccess) {
+        const notification = document.createElement('div');
+        notification.className = 'alert ' + (isSuccess ? 'alert-success' : 'alert-danger');
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '1000';
+        notification.style.backgroundColor = isSuccess ? '#4CAF50' : '#f44336';
+        notification.style.color = 'white';
+        notification.style.padding = '15px';
+        notification.style.borderRadius = '4px';
+        notification.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+        notification.style.transition = 'opacity 0.5s';
+        
+        if (title) {
+            const titleEl = document.createElement('strong');
+            titleEl.textContent = title + ': ';
+            notification.appendChild(titleEl);
+        }
+        
+        notification.appendChild(document.createTextNode(message));
+        document.body.appendChild(notification);
+        
+        // Faire disparaître la notification après 3 secondes
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => document.body.removeChild(notification), 500);
+        }, 3000);
+    }
+    
+    // Ajouter un gestionnaire d'événements à chaque bouton
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const braceletId = this.getAttribute('data-bracelet-id');
+            const braceletName = this.getAttribute('data-bracelet-name');
+            
+            console.log('Tentative d\'ajout au panier :', braceletId, braceletName);
+            
+            try {
+                // Envoyer la requête au serveur
+                const response = await fetch('/panier/ajouter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ braceletId, quantity: 1 })
+                });
+                
+                console.log('Statut de la réponse:', response.status);
+                const data = await response.json();
+                console.log('Données reçues:', data);
+                
+                if (data.success) {
+                    // Animation du bouton
+                    this.classList.add('added');
+                    setTimeout(() => this.classList.remove('added'), 1000);
+                    
+                    // Afficher une notification de succès
+                    showNotification(`${braceletName} a été ajouté à votre panier`, "Ajout au panier", true);
+                    
+                    // Mettre à jour le compteur du panier si vous en avez un
+                    // updateCartCounter(data.cartCount);
+                } else {
+                    // Afficher l'erreur
+                    showNotification(data.message || "Une erreur est survenue", "Erreur", false);
+                }
+            } catch (error) {
+                console.error("Erreur lors de l'ajout au panier:", error);
+                showNotification("Une erreur est survenue lors de l'ajout au panier", "Erreur", false);
+            }
+        });
+    });
+});
+    </script>
+</body>
+</html>

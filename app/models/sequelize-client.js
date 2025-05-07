@@ -1,11 +1,11 @@
-import "dotenv/config";
+// models/sequelize-client.js
+import "dotenv/config";  // Charger les variables d'environnement en premier
 import { Sequelize } from "sequelize";
-import  "./associations.js"
 
+// Crée une instance de Sequelize
 export const sequelize = new Sequelize(
     process.env.PG_URL,
     {
-    // on va faire la correpondance des champs updatedAt et createdAt
         define: {
             createdAt: "created_at",
             updatedAt: "updated_at",

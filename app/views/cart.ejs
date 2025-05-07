@@ -1,0 +1,451 @@
+<link rel="stylesheet" href="/css/profile.css">
+
+<%- include('partials/navbarre.ejs') %>
+
+<div class="container my-5">
+    <h1 class="mb-4">Mon Panier</h1>
+    
+    <!-- Message pour afficher les notifications -->
+    <div id="cart-notification" class="alert alert-success d-none" role="alert"></div>
+
+    <% if (cart && cart.items && cart.items.length > 0) { %>
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <!-- Items du panier -->
+                <div class="table-responsive">
+                    <table class="table table-borderless mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">Produit</th>
+                                <th scope="col" class="text-center py-3">Prix unitaire</th>
+                                <th scope="col" class="text-center py-3">Quantité</th>
+                                <th scope="col" class="text-end py-3 pe-4">Total</th>
+                                <th scope="col" class="text-center py-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% cart.items.forEach(item => { %>
+                                <tr class="border-bottom cart-item" data-jewel-id="<%= item.jewel.id %>">
+                                    <!-- Produit avec image -->
+                                    <td class="px-4 py-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3" style="width: 80px; height: 80px;">
+                                                <% if (item.jewel.image) { %>
+                                                    <img src="/uploads/jewels/<%= item.jewel.image %>" alt="<%= item.jewel.name %>" class="img-fluid rounded" style="width: 100%; height: 100%; object-fit: cover;">
+                                                <% } else { %>
+                                                    <div class="bg-light rounded d-flex justify-content-center align-items-center" style="width: 100%; height: 100%;">
+                                                        <i class="fas fa-gem text-secondary" style="font-size: 2rem;"></i>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-1"><%= item.jewel.name %></h5>
+                                                <% if (item.jewel.matiere) { %>
+                                                    <small class="text-muted d-block">
+                                                        <%= item.jewel.matiere %>
+                                                        <% if (item.jewel.carat) { %>
+                                                            <%= item.jewel.carat %> carats
+                                                        <% } %>
+                                                    </small>
+                                                <% } %>
+                                                <% if (item.jewel.taille) { %>
+                                                    <small class="text-muted d-block">Taille: <%= item.jewel.taille %></small>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Prix unitaire -->
+                                    <td class="text-center align-middle">
+                                        <span class="fw-bold unit-price" data-price="<%= item.jewel.price_ttc %>">
+                                            <%= Number(item.jewel.price_ttc).toFixed(2) %> €
+                                          </span>
+                                          
+                                   </td>
+
+                                    <!-- Quantité avec boutons + et - -->
+                                    <td class="text-center align-middle">
+                                        <div class="quantity-control d-flex justify-content-center align-items-center">
+                                            <button class="btn btn-sm btn-outline-secondary decrease-qty" 
+                                                    <%= item.quantity <= 1 ? 'disabled' : '' %>>
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                            <input type="number" class="form-control mx-2 text-center qty-input" 
+                                                   value="<%= item.quantity %>" 
+                                                   min="1" 
+                                                   max="<%= item.jewel.stock %>"
+                                                   style="width: 60px;">
+                                            <button class="btn btn-sm btn-outline-secondary increase-qty"
+                                                    <%= item.quantity >= item.jewel.stock ? 'disabled' : '' %>>
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <% if (item.jewel.stock < 5) { %>
+                                            <small class="text-danger d-block mt-1">
+                                                Plus que <%= item.jewel.stock %> en stock!
+                                            </small>
+                                        <% } %>
+                                    </td>
+
+                                    <!-- Total -->
+                                    <td class="text-end align-middle pe-4">
+                                        <span class="fw-bold item-subtotal">
+                                            <%= (item.jewel.price_ttc * item.quantity).toFixed(2) %> €
+                                        </span>
+                                    </td>
+
+                                    <!-- Actions -->
+                                    <td class="text-center align-middle">
+                                        <button class="btn btn-sm btn-outline-danger remove-item" title="Supprimer">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Résumé du panier -->
+                <div class="card-footer bg-white p-4">
+                    <div class="row justify-content-between">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Code promo">
+                                <button class="btn btn-outline-secondary" type="button">Appliquer</button>
+                            </div>
+                            <button id="clear-cart" class="btn btn-outline-danger mt-3">
+                                <i class="fas fa-trash me-2"></i> Vider le panier
+                            </button>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Sous-total:</span>
+                                <span class="fw-bold cart-subtotal"><%= cart.totalPrice.toFixed(2) %> €</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Frais de livraison:</span>
+                                <span class="fw-bold shipping-cost">
+                                    <% const shippingFee = cart.totalPrice >= 100 ? 0 : 5.90; %>
+                                    <%= shippingFee.toFixed(2) %> €
+                                </span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="fs-5">Total:</span>
+                                <span class="fs-5 fw-bold cart-total">
+                                    <%= (cart.totalPrice + shippingFee).toFixed(2) %> €
+                                </span>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a href="/checkout" class="btn btn-primary">
+                                    Passer la commande <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                                <a href="/" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i> Continuer mes achats
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <% } else { %>
+        <div class="card shadow-sm text-center py-5">
+            <div class="card-body">
+                <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+                <h3>Votre panier est vide</h3>
+                <p class="text-muted">Découvrez notre collection de bijoux pour trouver votre prochain coup de cœur.</p>
+                <a href="/" class="btn btn-primary mt-3">
+                    <i class="fas fa-gem me-2"></i> Explorer la collection
+                </a>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Suggestions de produits -->
+    <% if (recommendations && recommendations.length > 0) { %>
+        <div class="mt-5">
+            <h3 class="mb-4">Vous pourriez aussi aimer</h3>
+            <div class="row row-cols-2 row-cols-md-4 g-4">
+                <% recommendations.forEach(jewel => { %>
+                    <div class="col">
+                        <div class="card h-100 product-card">
+                            <div class="position-relative">
+                                <img src="<%= jewel.image || '/images/placeholder.jpg' %>" class="card-img-top" alt="<%= jewel.name %>" style="height: 180px; object-fit: cover;">
+                                <% if (jewel.stock < 5 && jewel.stock > 0) { %>
+                                    <span class="position-absolute top-0 end-0 badge bg-warning m-2">Stock limité</span>
+                                <% } else if (jewel.stock === 0) { %>
+                                    <span class="position-absolute top-0 end-0 badge bg-danger m-2">Rupture</span>
+                                <% } %>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title"><%= jewel.name %></h5>
+                                <p class="card-text text-primary fw-bold"><%= Number(jewel.price_ttc).toFixed(2) %> €</p>
+                                <a href="/jewels/<%= jewel.slug %>" class="btn btn-sm btn-outline-primary">Détails</a>
+                                <% if (jewel.stock > 0) { %>
+                                    <button class="btn btn-sm btn-primary add-to-cart" data-jewel-id="<%= jewel.id %>">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </button>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<!-- Script pour les interactions du panier -->
+<script>
+   document.addEventListener('DOMContentLoaded', function() {
+    const cartNotification = document.getElementById('cart-notification');
+
+    // Fonction pour afficher un message de notification
+    function showNotification(message, isSuccess = true) {
+        cartNotification.className = isSuccess ? 'alert alert-success' : 'alert alert-danger';
+        cartNotification.textContent = message;
+        cartNotification.classList.remove('d-none');
+        
+        setTimeout(() => {
+            cartNotification.classList.add('d-none');
+        }, 3000);
+    }
+    
+    // Gestion des boutons d'ajout au panier dans les recommandations
+    const addToCartButtons = document.querySelectorAll('.add-to-cart');
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', async function() {
+            const jewelId = this.getAttribute('data-jewel-id');
+            console.log('Tentative d\'ajout au panier - ID bijou:', jewelId);
+            
+            try {
+                // Afficher notification de tentative
+                showNotification("Ajout en cours...", true);
+                
+                const response = await fetch('/panier/ajouter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Ajouter un token CSRF si nécessaire
+                        // 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ jewelId, quantity: 1 }),
+                    credentials: 'same-origin' // Important pour les cookies de session
+                });
+                
+                console.log('Réponse brute:', response);
+                
+                if (!response.ok) {
+                    console.error("Erreur HTTP:", response.status, response.statusText);
+                    const errorText = await response.text();
+                    console.error("Détails de l'erreur:", errorText);
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Réponse JSON:', data);
+                
+                if (data.success) {
+                    showNotification(data.jewelName + " ajouté au panier");
+                    
+                    // Mettre à jour le compteur du panier si vous en avez un
+                    const cartCounter = document.querySelector('.cart-counter');
+                    if (cartCounter) {
+                        let count = parseInt(cartCounter.textContent || '0');
+                        cartCounter.textContent = count + 1;
+                    }
+                    
+                    // Recharger la page après 1 seconde pour afficher le panier mis à jour
+                    // Cette solution est temporaire, idéalement il faudrait mettre à jour 
+                    // dynamiquement le panier sans rechargement
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    showNotification(data.message, false);
+                }
+            } catch (error) {
+                console.error("Erreur détaillée lors de l'ajout au panier:", error);
+                showNotification("Une erreur est survenue lors de l'ajout au panier", false);
+            }
+        });
+    });
+
+        // Gestion des boutons d'augmentation de quantité
+        document.querySelectorAll('.increase-qty').forEach(button => {
+            button.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const qtyInput = row.querySelector('.qty-input');
+                const currentValue = parseInt(qtyInput.value);
+                const maxValue = parseInt(qtyInput.getAttribute('max'));
+                
+                if (currentValue < maxValue) {
+                    qtyInput.value = currentValue + 1;
+                    updateQuantity(row, currentValue + 1);
+                }
+                
+                // Gérer l'état des boutons
+                row.querySelector('.decrease-qty').removeAttribute('disabled');
+                if (parseInt(qtyInput.value) >= maxValue) {
+                    this.setAttribute('disabled', 'disabled');
+                }
+            });
+        });
+
+        // Gestion des boutons de diminution de quantité
+        document.querySelectorAll('.decrease-qty').forEach(button => {
+            button.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const qtyInput = row.querySelector('.qty-input');
+                const currentValue = parseInt(qtyInput.value);
+                
+                if (currentValue > 1) {
+                    qtyInput.value = currentValue - 1;
+                    updateQuantity(row, currentValue - 1);
+                }
+                
+                // Gérer l'état des boutons
+                row.querySelector('.increase-qty').removeAttribute('disabled');
+                if (parseInt(qtyInput.value) <= 1) {
+                    this.setAttribute('disabled', 'disabled');
+                }
+            });
+        });
+
+        // Gestion des champs de quantité
+        document.querySelectorAll('.qty-input').forEach(input => {
+            input.addEventListener('change', function() {
+                const row = this.closest('tr');
+                let value = parseInt(this.value);
+                const min = parseInt(this.getAttribute('min'));
+                const max = parseInt(this.getAttribute('max'));
+                
+                // Valider la valeur
+                if (isNaN(value) || value < min) {
+                    value = min;
+                    this.value = min;
+                } else if (value > max) {
+                    value = max;
+                    this.value = max;
+                }
+                
+                // Mettre à jour les états des boutons
+                row.querySelector('.decrease-qty').disabled = (value <= min);
+                row.querySelector('.increase-qty').disabled = (value >= max);
+                
+                updateQuantity(row, value);
+            });
+        });
+
+        // Fonction pour mettre à jour la quantité
+        async function updateQuantity(row, quantity) {
+            const jewelId = row.getAttribute('data-jewel-id');
+            
+            try {
+                const response = await fetch('/cart/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ jewelId, quantity })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                          // Mettre à jour le sous-total de l'article
+                          const unitPrice = parseFloat(row.querySelector('.unit-price').getAttribute('data-price'));
+                    const itemSubtotal = unitPrice * quantity;
+                    row.querySelector('.item-subtotal').textContent = itemSubtotal.toFixed(2) + ' €';
+                    
+                    // Mettre à jour les totaux du panier
+                    updateCartTotals();
+                    
+                    showNotification(data.message);
+                } else {
+                    showNotification(data.message, false);
+                    // Réinitialiser la quantité en cas d'erreur
+                    const originalQty = data.originalQuantity || 1;
+                    row.querySelector('.qty-input').value = originalQty;
+                }
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour du panier:", error);
+                showNotification("Une erreur est survenue lors de la mise à jour du panier", false);
+            }
+        }
+
+        // Gestion des boutons de suppression d'article
+        document.querySelectorAll('.remove-item').forEach(button => {
+            button.addEventListener('click', async function() {
+                const row = this.closest('tr');
+                const jewelId = row.getAttribute('data-jewel-id');
+                
+                if (confirm('Êtes-vous sûr de vouloir supprimer cet article de votre panier ?')) {
+                    try {
+                        const response = await fetch('/cart/remove', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ jewelId })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            row.remove();
+                            showNotification(data.message);
+                            updateCartTotals();
+                            
+                            // Vérifier si le panier est vide et rafraîchir la page si nécessaire
+                            if (document.querySelectorAll('.cart-item').length === 0) {
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            }
+                        } else {
+                            showNotification(data.message, false);
+                        }
+                    } catch (error) {
+                        console.error("Erreur lors de la suppression de l'article:", error);
+                        showNotification("Une erreur est survenue lors de la suppression de l'article", false);
+                    }
+                }
+            });
+        });
+
+        // Gestion du bouton "Vider le panier"
+        const clearCartButton = document.getElementById('clear-cart');
+        if (clearCartButton) {
+            clearCartButton.addEventListener('click', async function() {
+                if (confirm('Êtes-vous sûr de vouloir vider votre panier ?')) {
+                    try {
+                        const response = await fetch('/cart/clear', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            showNotification(data.message);
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            showNotification(data.message, false);
+                        }
+                    } catch (error) {
+                        console.error("Erreur lors du vidage du panier:", error);
+                        showNotification("Une erreur est survenue lors du vidage du panier", false);
+                    }
+                }
+            });
+        }
+    });
+</script>

@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi Client - Administration</title>
+    <link rel="stylesheet" href="/css/follow-customer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <h2>Bijoux Admin</h2>
+            </div>
+            <div class="sidebar-menu">
+                <a href="#"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a>
+                <a href="#" class="active"><i class="fas fa-users"></i> Clients</a>
+                <a href="/produits"><i class="fas fa-gem"></i> Produits</a>
+                <a href="#"><i class="fas fa-shopping-cart"></i> Commandes</a>
+                <a href="#"><i class="fas fa-chart-bar"></i> Rapports</a>
+                <a href="#"><i class="fas fa-cog"></i> Paramètres</a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="page-title">
+                    <h1>Gestion des Clients</h1>
+                </div>
+                <div class="user-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Rechercher un client...">
+                    </div>
+                    <div class="user-profile">
+                        <img src="/api/placeholder/40/40" alt="Admin">
+                        <span>Admin</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Profile Card -->
+            <div class="card">
+                <div class="client-profile">
+                    <div class="client-avatar">
+                        <img src="/api/placeholder/120/120" alt="Client">
+                    </div>
+                    <div class="client-details">
+                        <h2 class="client-name"><%= customer.first_name %> <%= customer.last_name %></h2>
+                        <p class="client-email"><%= customer.email %></p>
+                        
+                        <div class="client-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Téléphone</span>
+                                <span class="meta-value"><% customer.phone %></span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Adresse</span>
+                                <span class="meta-value"><% customer.address %></span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Client depuis</span>
+                                <span class="meta-value"><% customer.created_at %></span>
+                            </div>
+                        </div>
+                        
+                        <div class="actions-bar">
+                            <button class="action-btn">
+                                <i class="fas fa-envelope"></i> Envoyer un email
+                            </button>
+                            <button class="action-btn">
+                                <i class="fas fa-edit"></i> Modifier
+                            </button>
+                            <button class="action-btn" style="color: #F44336;">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Statistics -->
+            <div class="client-overview">
+                <div class="client-stat">
+                    <div class="stat-value"><%= stats.totalOrders %></div>
+                    <div class="stat-label">Commandes totales</div>
+                </div>
+                <div class="client-stat">
+                    <div class="stat-value"><%= stats.totalSpent %> €</div>
+                    <div class="stat-label">Montant total dépensé</div>
+                </div>
+                <div class="client-stat">
+                    <div class="stat-value"><%= stats.averageBasket %> €</div>
+                    <div class="stat-label">Panier moyen</div>
+                </div>
+                <div class="client-stat">
+                    <div class="stat-value"><%= stats.totalFavorites %></div>
+                    <div class="stat-label">Articles favoris</div>
+                    
+                </div>
+                  </div>
+            
+
+                  <% if (orders.length > 0) { %>
+                    <% orders.forEach(order => { %>
+                      <tr>
+                        <td>#ORD-<%= order.id %></td>
+                        <td><%= order.created_at.toLocaleDateString('fr-FR') %></td>
+                        <td><%= order.items.length %> article<%= order.items.length > 1 ? 's' : '' %></td>
+                        <td><%= order.total_amount.toFixed(2) %> €</td>
+                        <td>
+                          <span class="status-badge status-<%= order.status %>">
+                            <%= order.status === 'completed' ? 'Complétée' :
+                                 order.status === 'pending' ? 'En attente' :
+                                 order.status === 'processing' ? 'En traitement' :
+                                 order.status === 'cancelled' ? 'Annulée' : order.status %>
+                          </span>
+                        </td>
+                        <td><%= order.payment_method || '-' %></td>
+                        <td>
+                          <button class="btn-outline" onclick="showOrderDetails('<%= order.id %>')">Détails</button>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="7">Aucune commande pour le moment.</td>
+                    </tr>
+                  <% } %>
+                
+                <!-- Favorites Tab -->
+                <div class="tab-content" id="favorites-tab">
+                    <div class="row">
+                        <% favorites.forEach(fav => { %>
+                            <div class="col-md-3">
+                                <div class="item-card">
+                                    <div class="item-image">
+                                        <img src="<%= fav.image || '/api/placeholder/80/80' %>" alt="Bijou">
+                                    </div>
+                                    <div class="item-details">
+                                        <div class="item-name"><%= fav.name %></div>
+                                        <div class="item-meta">Ajouté le <%= fav.addedAt %></div>
+                                        <div class="item-price"><%= fav.price.toFixed(2) %> €</div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                </div>
+                
+                
+                <!-- Activity Tab -->
+                <div class="tab-content" id="activity-tab">
+                    <ul class="activity-list">
+                        <% activities.forEach(act => { %>
+                            <li class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas <%= act.icon %>"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <div class="activity-title"><%= act.title %></div>
+                                    <div class="activity-date"><%= act.date %></div>
+                                </div>
+                            </li>
+                        <% }) %>
+                    </ul>
+                </div>
+                
+                
+                <!-- Statistics Tab -->
+                <div class="tab-content" id="stats-tab">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h3 class="section-title">Achats par mois</h3>
+                            <div class="chart-container">
+                                <canvas id="purchaseChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h3 class="section-title">Catégories populaires</h3>
+                            <div class="chart-container">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ---
+            
+            <!-- Modal pour les détails de commande -->
+            <div class="modal" id="orderDetailsModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Détails de la commande #<span id="orderNumber"></span></h3>
+                        <button class="modal-close" onclick="closeOrderDetails()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="order-summary">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p><strong>Date:</strong> <span id="orderDate">12/04/2025</span></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Statut:</strong> <span id="orderStatus">Complétée</span></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Méthode de paiement:</strong> <span id="paymentMethod">Carte bancaire</span></p>
+                                </div>
+                            </div>
+                            <div class="address-info">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h4>Adresse de facturation</h4>
+                                        <p>Marie Dupont<br>12 Rue des Fleurs<br>75001 Paris<br>France</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h4>Adresse de livraison</h4>
+                                        <p>Marie Dupont<br>12 Rue des Fleurs<br>75001 Paris<br>France</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4>Articles commandés</h4>
+                        <div class="order-items">
+                            <div class="item-card">
+                                <div class="item-image">
+                                    <img src="/api/placeholder/80/80" alt="Bijou">
+                                </div>
+                                <div class="item-details">
+                                    <div class="item-name">Bague Solitaire Or Rose</div>
+                                    <div class="item-meta">Quantité: 1</div>
+                                    <div class="item-price">180,00 €</div>
+                                </div>
+                            </div>
+                            <div class="item-card">
+                                <div class="item-image">
+                                    <img src="/api/placeholder/80/80" alt="Bijou">
+                                </div>
+                                <div class="item-details">
+                                    <div class="item-name">Bracelet Chaîne Or</div>
+                                    <div class="item-meta">Quantité: 1</div>
+                                    <div class="item-price">120,00 €</div>
+                                </div>
+                            </div>
+                            <div class="item-card">
+                                <div class="item-image">
+                                    <img src="/api/placeholder/80/80" alt="Bijou">
+                                </div>
+                                <div class="item-details">
+                                    <div class="item-name">Boucles d'oreilles Perle</div>
+                                    <div class="item-meta">Quantité: 1</div>
+                                    <div class="item-price">90,00 €</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="order-totals">
+                            <div class="total-row">
+                                <span class="total-label">Sous-total:</span>
+                                <span class="total-value">390,00 €</span>
+                            </div>
+                            <div class="total-row">
+                                <span class="total-label">Frais de livraison:</span>
+                                <span class="total-value">0,00 €</span>
+                            </div>
+                            <div class="total-row">
+                                <span class="total-label">Taxes (TVA 20%):</span>
+                                <span class="total-value">78,00 €</span>
+                            </div>
+                            <div class="total-row total-final">
+                                <span class="total-label">Total:</span>
+                                <span class="total-value">390,00 €</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fonction pour naviguer entre les onglets
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Enlever la classe active de tous les boutons et contenus
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // Ajouter la classe active au bouton cliqué
+                button.classList.add('active');
+                
+                // Activer le contenu correspondant
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(tabId + '-tab').classList.add('active');
+            });
+        });
+
+        // Fonctions pour les modales des détails de commande
+        function showOrderDetails(orderNumber) {
+            document.getElementById('orderNumber').textContent = orderNumber;
+            document.getElementById('orderDetailsModal').classList.add('show');
+            
+            // Ici, on pourrait charger les détails spécifiques de la commande via une API
+            // Pour l'exemple, nous utilisons des données statiques
+        }
+        
+        function closeOrderDetails() {
+            document.getElementById('orderDetailsModal').classList.remove('show');
+        }
+
+        // Initialisation des graphiques pour la section statistiques
+        document.addEventListener('DOMContentLoaded', function() {
+            // Graphique des achats par mois
+            const purchaseCtx = document.getElementById('purchaseChart').getContext('2d');
+            const purchaseChart = new Chart(purchaseCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Nov', 'Déc', 'Jan', 'Fév', 'Mar', 'Avr'],
+                    datasets: [{
+                        label: 'Montant des achats (€)',
+                        data: [360, 430, 270, 250, 180, 320],
+                        borderColor: '#b76e79',
+                        backgroundColor: 'rgba(183, 110, 121, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' €';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Graphique des catégories populaires
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            const categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Bagues', 'Colliers', 'Bracelets', 'Boucles d\'oreilles'],
+                    datasets: [{
+                        data: [40, 30, 20, 10],
+                        backgroundColor: [
+                            '#b76e79', 
+                            '#e8c2c8', 
+                            '#7d4b53',
+                            '#d9a3ac'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+        });
+
+        // Fonctions pour le filtrage des commandes
+        document.querySelector('.filter-section .btn-primary').addEventListener('click', function() {
+            const statusFilter = document.getElementById('status-filter').value;
+            const dateFrom = document.getElementById('date-from').value;
+            const dateTo = document.getElementById('date-to').value;
+            const minAmount = document.getElementById('min-amount').value;
+            const maxAmount = document.getElementById('max-amount').value;
+            
+            // Implémenter la logique de filtrage ici
+            // Pour l'exemple, nous affichons simplement les valeurs des filtres
+            console.log('Filtres appliqués:', {
+                status: statusFilter,
+                dateFrom: dateFrom,
+                dateTo: dateTo,
+                minAmount: minAmount,
+                maxAmount: maxAmount
+            });
+            
+            // Dans une implémentation réelle, on enverrait ces filtres à une API
+            // et on mettrait à jour le tableau des commandes avec les résultats
+        });
+        
+        document.querySelector('.filter-section .btn-outline').addEventListener('click', function() {
+            // Réinitialiser tous les filtres
+            document.getElementById('status-filter').value = '';
+            document.getElementById('date-from').value = '';
+            document.getElementById('date-to').value = '';
+            document.getElementById('min-amount').value = '';
+            document.getElementById('max-amount').value = '';
+            
+            // Dans une implémentation réelle, on rechargerait toutes les commandes sans filtre
+        });
+
+        // Ajouter des événements pour les boutons d'action client
+        document.querySelectorAll('.action-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.textContent.trim();
+                console.log(`Action client: ${action}`);
+                
+                // Implémenter les actions spécifiques ici selon le bouton cliqué
+            });
+        });
+
+        // Gérer la pagination
+        document.querySelectorAll('.pagination button').forEach(button => {
+            button.addEventListener('click', function() {
+                if (!this.classList.contains('active')) {
+                    document.querySelector('.pagination button.active').classList.remove('active');
+                    this.classList.add('active');
+                    
+                    // Charger la page correspondante
+                    const page = this.textContent;
+                    console.log(`Chargement de la page ${page}`);
+                    
+                    // Dans une implémentation réelle, on chargerait les données de la page sélectionnée
+                }
+            });
+        });
+
+        // Fonction pour la recherche de clients
+        const searchInput = document.querySelector('.search-box input');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            console.log(`Recherche: ${searchTerm}`);
+            
+            // Dans une implémentation réelle, on filtrerait la liste des clients
+            // ou on redirigerait vers une page de résultats de recherche
+        });
+
+        // Styles supplémentaires pour les éléments dynamiques
+        document.head.insertAdjacentHTML('beforeend', `
+          
+        `);
+
+        
+   
+    /**
+ * Bijoux Admin - JavaScript principal
+ * Gère toutes les fonctionnalités de l'interface d'administration de la bijouterie
+ */
+
+// Objet principal pour contenir toutes les fonctionnalités
+const BijouxAdmin = {
+    // États et données
+    data: {
+        currentTab: 'orders',
+        currentPage: 1,
+        itemsPerPage: 8,
+        orders: [],
+        favorites: [],
+        activities: [],
+        filters: {
+            status: '',
+            dateFrom: '',
+            dateTo: '',
+            minAmount: '',
+            maxAmount: ''
+        },
+        charts: {}
+    },
+
+    // Initialisation de l'application
+    init: function() {
+        this.initTabNavigation();
+        this.initOrderModals();
+        this.initFilters();
+        this.initClientActions();
+        this.initPagination();
+        this.initSearch();
+        this.loadCharts();
+        
+        // Chargement initial des données
+        this.loadData();
+        
+        console.log('BijouxAdmin initialisé');
+    },
+
+    // Méthodes pour la gestion des onglets
+    initTabNavigation: function() {
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Enlever la classe active de tous les boutons et contenus
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // Ajouter la classe active au bouton cliqué
+                button.classList.add('active');
+                
+                // Activer le contenu correspondant
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(tabId + '-tab').classList.add('active');
+                
+                // Mettre à jour l'état actuel
+                this.data.currentTab = tabId;
+                
+                // Si on passe à l'onglet des statistiques, rafraîchir les graphiques
+                if (tabId === 'stats') {
+                    this.updateCharts();
+                }
+            });
+        });
+    },
+
+    // Gestion des modales pour les détails de commande
+    initOrderModals: function() {
+        // Fermeture de la modale au clic sur le X
+        document.querySelector('.modal-close').addEventListener('click', () => {
+            this.closeOrderDetails();
+        });
+        
+        // Fermeture de la modale au clic en dehors
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('orderDetailsModal');
+            if (event.target === modal) {
+                this.closeOrderDetails();
+            }
+        });
+        
+        // Empêcher la fermeture lors du clic à l'intérieur de la modale
+        document.querySelector('.modal-content').addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+    },
+    
+    showOrderDetails: function(orderNumber) {
+        // Mise à jour des éléments de la modale
+        document.getElementById('orderNumber').textContent = orderNumber;
+        document.getElementById('orderDetailsModal').classList.add('show');
+        
+        // Simuler le chargement des données de commande
+        this.fetchOrderDetails(orderNumber);
+    },
+    
+    closeOrderDetails: function() {
+        document.getElementById('orderDetailsModal').classList.remove('show');
+    },
+    
+    fetchOrderDetails: function(orderNumber) {
+        // En situation réelle, cette fonction appellerait une API
+        console.log(`Chargement des détails de la commande ${orderNumber}`);
+        
+        // Pour l'exemple, nous utilisons des données statiques basées sur l'ID de commande
+        // Ici, on pourrait adapter les données affichées en fonction de l'ID de commande
+        const orderData = {
+            id: orderNumber,
+            date: orderNumber === 'ORD-2345' ? '12/04/2025' : '05/03/2025',
+            status: 'Complétée',
+            paymentMethod: orderNumber === 'ORD-2345' ? 'Carte bancaire' : 'PayPal',
+            items: [
+                { name: 'Bague Solitaire Or Rose', quantity: 1, price: 180.00, image: '/api/placeholder/80/80' },
+                { name: 'Bracelet Chaîne Or', quantity: 1, price: 120.00, image: '/api/placeholder/80/80' },
+                { name: 'Boucles d\'oreilles Perle', quantity: 1, price: 90.00, image: '/api/placeholder/80/80' }
+            ],
+            subtotal: 390.00,
+            shipping: 0.00,
+            tax: 78.00,
+            total: 390.00,
+            billingAddress: {
+                name: 'Marie Dupont',
+                street: '12 Rue des Fleurs',
+                city: '75001 Paris',
+                country: 'France'
+            },
+            shippingAddress: {
+                name: 'Marie Dupont',
+                street: '12 Rue des Fleurs',
+                city: '75001 Paris',
+                country: 'France'
+            }
+        };
+        
+        // Mise à jour des éléments de la modale avec les données
+        document.getElementById('orderDate').textContent = orderData.date;
+        document.getElementById('orderStatus').textContent = orderData.status;
+        document.getElementById('paymentMethod').textContent = orderData.paymentMethod;
+        
+        // On pourrait également mettre à jour dynamiquement la liste des produits, les totaux, etc.
+    },
+
+    // Gestion des filtres pour les commandes
+    initFilters: function() {
+        // Appliquer les filtres
+        document.querySelector('.filter-section .btn-primary').addEventListener('click', () => {
+            this.applyFilters();
+        });
+        
+        // Réinitialiser les filtres
+        document.querySelector('.filter-section .btn-outline').addEventListener('click', () => {
+            this.resetFilters();
+        });
+    },
+    
+    applyFilters: function() {
+        // Récupérer les valeurs des filtres
+        this.data.filters.status = document.getElementById('status-filter').value;
+        this.data.filters.dateFrom = document.getElementById('date-from').value;
+        this.data.filters.dateTo = document.getElementById('date-to').value;
+        this.data.filters.minAmount = document.getElementById('min-amount').value;
+        this.data.filters.maxAmount = document.getElementById('max-amount').value;
+        
+        console.log('Filtres appliqués:', this.data.filters);
+        
+        // Dans une implémentation réelle, on filtrerait les données et mettrait à jour l'affichage
+        this.filterOrders();
+    },
+    
+    resetFilters: function() {
+        // Réinitialiser les champs de formulaire
+        document.getElementById('status-filter').value = '';
+        document.getElementById('date-from').value = '';
+        document.getElementById('date-to').value = '';
+        document.getElementById('min-amount').value = '';
+        document.getElementById('max-amount').value = '';
+        
+        // Réinitialiser les filtres dans l'état
+        this.data.filters = {
+            status: '',
+            dateFrom: '',
+            dateTo: '',
+            minAmount: '',
+            maxAmount: ''
+        };
+        
+        console.log('Filtres réinitialisés');
+        
+        // Recharger toutes les commandes sans filtre
+        this.loadOrders();
+    },
+    
+    filterOrders: function() {
+        // Cette fonction filtrerait les commandes selon les critères
+        // Dans une application réelle, cela pourrait être une requête API
+        console.log('Filtrage des commandes...');
+        
+        // Simuler un délai de chargement
+        setTimeout(() => {
+            // Mise à jour de l'interface avec les commandes filtrées
+            console.log('Commandes filtrées chargées');
+        }, 500);
+    },
+
+    // Actions sur le profil client
+    initClientActions: function() {
+        document.querySelectorAll('.action-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const action = event.currentTarget.textContent.trim();
+                this.handleClientAction(action);
+            });
+        });
+    },
+    
+    handleClientAction: function(action) {
+        console.log(`Action client: ${action}`);
+        
+        // Traiter différentes actions
+        if (action.includes('Envoyer un email')) {
+            this.sendClientEmail();
+        } else if (action.includes('Modifier')) {
+            this.editClientProfile();
+        } else if (action.includes('Supprimer')) {
+            this.confirmDeleteClient();
+        }
+    },
+    
+    sendClientEmail: function() {
+        // Dans une implémentation réelle, cela pourrait ouvrir une modale avec un formulaire d'email
+        alert('Fonctionnalité d\'envoi d\'email à implémenter');
+    },
+    
+    editClientProfile: function() {
+        // Dans une implémentation réelle, cela pourrait rediriger vers un formulaire d'édition
+        alert('Fonctionnalité de modification du profil à implémenter');
+    },
+    
+    confirmDeleteClient: function() {
+        // Demander confirmation avant suppression
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce client et toutes ses données associées?')) {
+            console.log('Suppression du client confirmée');
+            // Dans une implémentation réelle, cela enverrait une requête API pour supprimer le client
+            alert('Client supprimé avec succès');
+        }
+    },
+
+    // Gestion de la pagination
+    initPagination: function() {
+        document.querySelectorAll('.pagination button').forEach(button => {
+            button.addEventListener('click', (event) => {
+                if (!event.currentTarget.classList.contains('active')) {
+                    document.querySelector('.pagination button.active').classList.remove('active');
+                    event.currentTarget.classList.add('active');
+                    
+                    // Déterminer la page à charger
+                    let page;
+                    if (event.currentTarget.textContent === '1' || event.currentTarget.textContent === '2') {
+                        page = parseInt(event.currentTarget.textContent);
+                    } else {
+                        // Si c'est le bouton suivant
+                        page = this.data.currentPage + 1;
+                    }
+                    
+                    this.loadPage(page);
+                }
+            });
+        });
+    },
+    
+    loadPage: function(page) {
+        console.log(`Chargement de la page ${page}`);
+        this.data.currentPage = page;
+        
+        // Dans une implémentation réelle, cela chargerait les données de la page
+        this.loadOrders();
+    },
+
+    // Recherche de clients
+    initSearch: function() {
+        const searchInput = document.querySelector('.search-box input');
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', (event) => {
+            // Effacer le timeout précédent pour éviter trop de requêtes
+            clearTimeout(searchTimeout);
+            
+            // Définir un nouveau timeout pour retarder la recherche
+            searchTimeout = setTimeout(() => {
+                const searchTerm = event.target.value.toLowerCase();
+                this.searchClients(searchTerm);
+            }, 500); // Attendre 500ms après la dernière frappe
+        });
+    },
+    
+    searchClients: function(searchTerm) {
+        console.log(`Recherche: ${searchTerm}`);
+        
+        // Dans une implémentation réelle, cela enverrait une requête API et afficherait les résultats
+        if (searchTerm.length > 2) {
+            // Simuler la recherche
+            console.log('Recherche de clients correspondants...');
+        }
+    },
+
+    // Chargement et gestion des données
+    loadData: function() {
+        // Charger toutes les données nécessaires
+        this.loadOrders();
+        this.loadFavorites();
+        this.loadActivities();
+    },
+    
+    loadOrders: function() {
+        console.log('Chargement des commandes...');
+        
+        // Dans une implémentation réelle, cela ferait une requête API
+        // Ici, nous simulons le chargement de données
+        setTimeout(() => {
+            console.log('Commandes chargées');
+        }, 300);
+    },
+    
+    loadFavorites: function() {
+        console.log('Chargement des favoris...');
+        
+        // Dans une implémentation réelle, cela ferait une requête API
+        setTimeout(() => {
+            console.log('Favoris chargés');
+        }, 300);
+    },
+    
+    loadActivities: function() {
+        console.log('Chargement des activités...');
+        
+        // Dans une implémentation réelle, cela ferait une requête API
+        setTimeout(() => {
+            console.log('Activités chargées');
+        }, 300);
+    },
+
+    // Gestion des graphiques statistiques
+    loadCharts: function() {
+        document.addEventListener('DOMContentLoaded', () => {
+            // Créer les graphiques une fois que le DOM est chargé
+            this.createPurchaseChart();
+            this.createCategoryChart();
+        });
+    },
+    
+    createPurchaseChart: function() {
+        const purchaseCtx = document.getElementById('purchaseChart').getContext('2d');
+        
+        this.data.charts.purchaseChart = new Chart(purchaseCtx, {
+            type: 'line',
+            data: {
+                labels: ['Nov', 'Déc', 'Jan', 'Fév', 'Mar', 'Avr'],
+                datasets: [{
+                    label: 'Montant des achats (€)',
+                    data: [360, 430, 270, 250, 180, 320],
+                    borderColor: '#b76e79',
+                    backgroundColor: 'rgba(183, 110, 121, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + ' €';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    },
+    
+    createCategoryChart: function() {
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        
+        this.data.charts.categoryChart = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Bagues', 'Colliers', 'Bracelets', 'Boucles d\'oreilles'],
+                datasets: [{
+                    data: [40, 30, 20, 10],
+                    backgroundColor: [
+                        '#b76e79', 
+                        '#e8c2c8', 
+                        '#7d4b53',
+                        '#d9a3ac'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+    },
+    
+    updateCharts: function() {
+        // Mettre à jour les données des graphiques si nécessaire
+        if (this.data.charts.purchaseChart) {
+            // On pourrait mettre à jour les données ici
+            this.data.charts.purchaseChart.update();
+        }
+        
+        if (this.data.charts.categoryChart) {
+            // On pourrait mettre à jour les données ici
+            this.data.charts.categoryChart.update();
+        }
+    },
+    
+    // Utilitaires et fonctions auxiliaires
+    formatCurrency: function(amount) {
+        return amount.toFixed(2).replace('.', ',') + ' €';
+    },
+    
+    formatDate: function(dateString) {
+        // Formater une date au format français (JJ/MM/AAAA)
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR');
+    },
+    
+    // Fonction pour afficher un message toast
+    showToast: function(message, type = 'info') {
+        // Créer un élément toast s'il n'existe pas
+        let toast = document.getElementById('toast-notification');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toast-notification';
+            document.body.appendChild(toast);
+        }
+        
+        // Définir la classe et le message
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        
+        // Afficher le toast
+        toast.classList.add('show');
+        
+        // Le cacher après 3 secondes
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+};
+
+// Ajouter des styles pour les notifications toast
+document.head.insertAdjacentHTML('beforeend', `
+
+`);
+
+// Initialiser l'application une fois que le DOM est chargé
+document.addEventListener('DOMContentLoaded', function() {
+    BijouxAdmin.init();
+});
+</script>
+</body>
+</html>
+                            
+                      
+
+                      

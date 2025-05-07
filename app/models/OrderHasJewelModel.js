@@ -24,6 +24,8 @@ OrderHasJewel.init(
     },
     {
         sequelize,
-        tableName: "order_has_jewel",
+        tableName: 'order_has_jewel',
+        timestamps: true, // important !
+        underscored: true, // si tes colonnes s'appellent created_at, updated_at
     }
 );

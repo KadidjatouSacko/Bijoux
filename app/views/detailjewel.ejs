@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= jewel ? jewel.name + ' - ÉCLAT DORÉ' : 'Détail du bijou - ÉCLAT DORÉ' %></title>
+
+  <!-- FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet"/>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  
+  <link rel="stylesheet" href="/css/detailjewel.css">
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <h1>ÉCLAT DORÉ</h1>
+          <span>BIJOUX PRÉCIEUX</span>
+        </div>
+        <div class="menu-toggle" id="menuToggle">
+          <i class="fas fa-bars"></i>
+        </div>
+       
+        <%- include('partials/navbarre.ejs') %>
+
+
+      </div>
+    </div>
+    <div class="overlay" id="overlay"></div>
+  </header>
+
+  <main class="container">
+    <div class="breadcrumb">
+      <a href="/">Accueil</a> / <a href="#">Catégorie</a> / <%= jewel ? jewel.name : 'Bijou inconnu' %>
+    </div>
+
+    <div class="product-container">
+      <div class="product-gallery">
+        <!-- Image principale -->
+        <div class="main-image-container">
+          <% 
+          // Déterminer toutes les images disponibles
+          let allImages = [];
+          
+          // D'abord, collecter toutes les images de la table jewel_images
+          if (jewel && jewel.images && Array.isArray(jewel.images) && jewel.images.length > 0) {
+            console.log("Nombre d'images trouvées dans jewel.images:", jewel.images.length);
+            jewel.images.forEach(img => {
+              if (img && img.image_url) {
+                allImages.push(img.image_url);
+                console.log("Image ajoutée:", img.image_url);
+              }
+            });
+          } else {
+            console.log("Aucune image trouvée dans jewel.images ou structure incorrecte");
+          }
+          
+          // Si aucune image n'est trouvée dans jewel_images, utiliser l'image principale
+          if (allImages.length === 0 && jewel && jewel.image) {
+            allImages.push(jewel.image);
+            console.log("Image principale ajoutée:", jewel.image);
+          }
+          
+          // Afficher le nombre total d'images trouvées
+          console.log("Nombre total d'images:", allImages.length);
+          
+          // Si aucune image n'est disponible, utiliser l'image par défaut
+          let mainImageSrc = '/images/no-image.jpg';
+          if (allImages.length > 0) {
+            mainImageSrc = `/uploads/jewels/${allImages[0]}`;
+          }
+          %>
+          <img src="<%= mainImageSrc %>" alt="<%= jewel.name %>" class="main-image" id="mainImage">
+          
+          <% 
+          // Afficher les boutons de navigation seulement s'il y a plus d'une image
+          if (allImages.length > 1) { 
+          %>
+            <button class="gallery-nav prev-btn" onclick="prevImage()"><i class="fas fa-chevron-left"></i></button>
+            <button class="gallery-nav next-btn" onclick="nextImage()"><i class="fas fa-chevron-right"></i></button>
+          <% } %>
+        </div>
+        
+        <!-- Galerie miniatures -->
+        <div class="thumbnail-gallery">
+          <% if (allImages.length > 0) { %>
+            <% allImages.forEach((imagePath, index) => { %>
+              <img 
+                src="/uploads/jewels/<%= imagePath %>" 
+                class="thumbnail <%= index === 0 ? 'active' : '' %>" 
+                alt="<%= jewel.name %> - vue <%= index + 1 %>" 
+                data-index="<%= index %>"
+                data-path="<%= imagePath %>"
+                onclick="setMainImage(<%= index %>)"
+              >
+            <% }) %>
+          <% } else { %>
+            <div class="no-thumbnails">Aucune miniature disponible</div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="product-info">
+        <h1 class="product-title"><%= jewel.name %></h1>
+        <div class="product-category">
+          Catégorie : <%= jewel.Category && jewel.Category.name ? jewel.Category.name : 'Catégorie non disponible' %>
+        </div>
+
+        <div class="product-price">Prix : <%= jewel.price_ttc %> €</div>
+        <div class="product-price-details">
+          <% 
+            let tva = jewel.price_ttc ? jewel.price_ttc * 0.20 : 0;
+            let ht = jewel.price_ttc ? jewel.price_ttc - tva : 0; 
+          %>
+          Prix HT : <%= ht.toFixed(2).replace('.', ',') %> € 
+          (TVA 20% : <%= tva.toFixed(2).replace('.', ',') %> €)
+        </div>
+
+        <div class="product-description">
+          <p><%= jewel.description %></p>
+        </div>
+
+            <div class="product-specs">
+                <div class="specs-title">Caractéristiques</div>
+                    <div class="specs-list">
+                         <% if (jewel.details && jewel.details.length > 0) { %>
+                          <% jewel.details.forEach(detail => { %>
+                            <div class="spec-item">
+                              <span class="spec-label"><%= detail.label %></span>
+                              <span class="spec-value"><%= detail.value %></span>
+                            </div>
+                          <% }) %>
+                        <% } else { %>
+                          <div class="spec-item">Aucun détail disponible</div>
+                        <% } %>
+              </div>
+            </div>
+        
+        <div class="product-actions">
+          <div class="quantity-selector">
+            <span class="quantity-label">Quantité:</span>
+            <div class="quantity-controls">
+              <button class="quantity-btn decrease">-</button>
+              <input type="text" value="1" class="quantity-input" min="1" max="<%= jewel.stock || 0 %>">
+              <button class="quantity-btn increase">+</button>
+            </div>
+            <div class="stock-info">
+              <% if (jewel.stock > 0) { %>
+                <i class="fas fa-check-circle"></i> En stock (<%= jewel.stock %> disponibles)
+              <% } else { %>
+                <i class="fas fa-times-circle"></i> Indisponible
+              <% } %>
+            </div>
+          </div>
+          
+          <div class="action-buttons">
+            <button class="btn btn-primary" <%= jewel.stock <= 0 ? 'disabled' : '' %>>
+              <i class="fas fa-shopping-bag"></i> Ajouter au panier
+            </button>
+
+            <div id="add-to-cart-animation" class="d-none">
+              <div class="cart-animation-content">
+                <i class="fas fa-check-circle"></i>
+                <span id="cart-animation-message">Article ajouté au panier</span>
+              </div>
+            </div>
+
+            <button class="btn btn-secondary">
+              <i class="fas fa-heart"></i> Favoris
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+          <div class="admin-actions">
+        <a href="/bijoux/<%= jewel.slug %>/modifier" class="btn btn-primary">
+          <i class="fas fa-edit"></i> Modifier ce bijou
+        </a>
+        
+        <button 
+          type="button" 
+          class="btn btn-danger" 
+          data-toggle="modal" 
+          data-target="#deleteJewelModal"
+        >
+          <i class="fas fa-trash"></i> Supprimer ce bijou
+        </button>
+      </div>
+
+      <!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="deleteJewelModal" tabindex="-1" role="dialog" aria-labelledby="deleteJewelModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteJewelModalLabel">Confirmer la suppression</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Êtes-vous sûr de vouloir supprimer le bijou "<%= jewel.name %>" ?
+        Cette action est irréversible.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+        <form action="/bijoux/<%= jewel.slug %>/supprimer" method="POST">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <div class="product-tabs">
+      <div class="tabs-nav">
+        <button class="tab-btn active">Description</button>
+        <button class="tab-btn">Livraison</button>
+        <button class="tab-btn">Entretien</button>
+        <button class="tab-btn">Avis clients</button>
+      </div>
+
+      <div class="tab-content active">
+        <h3>Description détaillée</h3>
+        <p><%= jewel.long_description || 'Aucune description détaillée disponible.' %></p>
+      </div>
+
+      <div class="tab-content">
+        <h3>Informations de livraison</h3>
+        <p>Livraison standard : 4,90€ — Livraison express : 8,90€ — Gratuite dès 75€</p>
+      </div>
+
+      <div class="tab-content">
+        <h3>Conseils d'entretien</h3>
+        <p>Éviter l'eau, les parfums, et nettoyer avec un chiffon doux.</p>
+      </div>
+
+      <div class="tab-content">
+        <h3>Avis clients</h3>
+        <% if (jewel.reviews && jewel.reviews.length > 0) { %>
+          <% jewel.reviews.forEach(review => { %>
+            <div class="review">
+              <div class="review-header">
+                <div class="review-stars">
+                  <% for (let i = 0; i < 5; i++) { %>
+                    <i class="fas <%= i < review.stars ? 'fa-star' : 'fa-star-half-alt' %>"></i>
+                  <% } %>
+                </div>
+                <div class="review-author"><%= review.author %> - <%= review.date %></div>
+              </div>
+              <div class="review-content">
+                <p><%= review.content %></p>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p>Aucun avis pour le moment.</p>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="related-products">
+      <div class="section-title">
+        <h3>Vous aimerez aussi</h3>
+      </div>
+      <div class="products-grid">
+        <% if (similarJewels && similarJewels.length > 0) { %>
+          <% similarJewels.forEach(similar => { %>
+            <div class="product-card">
+              <a href="/bijoux/<%= similar.slug %>">
+                <div class="product-card-img" style="background-image: url('/uploads/jewels/<%= similar.image ? similar.image : 'no-image.jpg' %>');"></div>
+                <div class="product-card-info">
+                  <h4 class="product-card-name"><%= similar.name %></h4>
+                  <div class="product-card-price">
+                    <% if (similar.price_ttc) { %>
+                      <%= Number(similar.price_ttc).toFixed(2).replace('.', ',') %> €
+                    <% } else { %>
+                      Prix non disponible
+                    <% } %>
+                  </div>              
+                </div>
+              </a>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <p>Aucun produit similaire disponible.</p>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h4>À propos</h4>
+          <ul>
+            <li><a href="#">Notre histoire</a></li>
+            <li><a href="#">Nos valeurs</a></li>
+            <li><a href="#">Nos engagements</a></li>
+            <li><a href="#">Nos boutiques</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Informations</h4>
+          <ul>
+            <li><a href="#">Livraison</a></li>
+            <li><a href="#">Retours & échanges</a></li>
+            <li><a href="#">Entretien bijoux</a></li>
+            <li><a href="#">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Service client</h4>
+          <ul>
+            <li><a href="#">Contactez-nous</a></li>
+            <li><a href="#">Suivi de commande</a></li>
+            <li><a href="#">Mentions légales</a></li>
+            <li><a href="#">CGV</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4>Suivez-nous</h4>
+          <ul>
+            <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+            <li><a href="#"><i class="fab fa-facebook-f"></i> Facebook</a></li>
+            <li><a href="#"><i class="fab fa-pinterest-p"></i> Pinterest</a></li>
+            <li><a href="#"><i class="fab fa-tiktok"></i> TikTok</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="copyright">
+        <p>&copy; 2025 ÉCLAT DORÉ. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Variables pour la galerie
+      const mainImage = document.getElementById('mainImage');
+      const thumbnails = document.querySelectorAll('.thumbnail');
+      const prevBtn = document.querySelector('.prev-btn');
+      const nextBtn = document.querySelector('.next-btn');
+      let currentIndex = 0;
+      const totalImages = thumbnails.length;
+      
+      // Fonction pour changer l'image principale
+      function changeMainImage(index) {
+        if (index < 0) index = totalImages - 1;
+        if (index >= totalImages) index = 0;
+        
+        currentIndex = index;
+        
+        // Mettre à jour l'image principale
+        if (mainImage && thumbnails[index]) {
+          mainImage.src = thumbnails[index].src;
+          
+          // Mettre à jour les classes active des miniatures
+          thumbnails.forEach((thumb, i) => {
+            if (i === index) {
+              thumb.classList.add('active');
+            } else {
+              thumb.classList.remove('active');
+            }
+          });
+        }
+      }
+      
+      // Ajouter les écouteurs d'événements pour les miniatures
+      thumbnails.forEach((thumbnail, index) => {
+        thumbnail.addEventListener('click', () => {
+          changeMainImage(index);
+        });
+      });
+      
+      // Navigation par boutons
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          changeMainImage(currentIndex - 1);
+        });
+      }
+      
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          changeMainImage(currentIndex + 1);
+        });
+      }
+      
+      // Menu mobile
+      const menuToggle = document.getElementById('menuToggle');
+      const mobileNav = document.getElementById('mobileNav');
+      const overlay = document.getElementById('overlay');
+      
+      if (menuToggle && mobileNav && overlay) {
+        menuToggle.addEventListener('click', () => {
+          mobileNav.classList.toggle('active');
+          overlay.classList.toggle('active');
+        });
+        
+        overlay.addEventListener('click', () => {
+          mobileNav.classList.remove('active');
+          overlay.classList.remove('active');
+        });
+      }
+      
+      // Onglets produit
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      tabBtns.forEach((btn, index) => {
+        btn.addEventListener('click', () => {
+          // Désactiver tous les onglets
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          
+          // Activer l'onglet sélectionné
+          btn.classList.add('active');
+          tabContents[index].classList.add('active');
+        });
+      });
+      
+      // Gestion de la quantité
+      const quantityInput = document.querySelector('.quantity-input');
+      const decreaseBtn = document.querySelector('.decrease');
+      const increaseBtn = document.querySelector('.increase');
+      
+      if (quantityInput && decreaseBtn && increaseBtn) {
+        const maxStock = parseInt(quantityInput.getAttribute('max')) || 9999;
+        
+        decreaseBtn.addEventListener('click', () => {
+          let value = parseInt(quantityInput.value);
+          if (value > 1) {
+            quantityInput.value = value - 1;
+          }
+        });
+        
+        increaseBtn.addEventListener('click', () => {
+          let value = parseInt(quantityInput.value);
+          if (value < maxStock) {
+            quantityInput.value = value + 1;
+          }
+        });
+        
+        quantityInput.addEventListener('change', () => {
+          let value = parseInt(quantityInput.value);
+          if (isNaN(value) || value < 1) {
+            quantityInput.value = 1;
+          } else if (value > maxStock) {
+            quantityInput.value = maxStock;
+          }
+        });
+      }
+
+      
+    });
+
+    
+  </script>
+</body>
+</html>

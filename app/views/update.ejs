@@ -1,0 +1,90 @@
+<%- include('partials/navbarre.ejs') %>
+    
+
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2>Modifier un bijou</h2>
+        </div>
+        <div class="card-body">
+            <% if (messages.error) { %>
+                <div class="alert alert-danger">
+                    <%= messages.error %>
+                </div>
+            <% } %>
+            
+            <form action="/admin/jewels/update/<%= jewel.slug %>" method="POST" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="name" name="name" value="<%= jewel.name %>" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Catégorie</label>
+                            <select class="form-select" id="category_id" name="category_id" required>
+                                <option value="">Sélectionner une catégorie</option>
+                                <% categories.forEach(category => { %>
+                                    <option value="<%= category.id %>" <%= jewel.category_id === category.id ? 'selected' : '' %>>
+                                        <%= category.name %>
+                                    </option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="price_ttc" class="form-label">Prix TTC (€)</label>
+                            <input type="number" step="0.01" class="form-control" id="price_ttc" name="price_ttc" value="<%= jewel.price_ttc %>" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="stock" class="form-label">Stock</label>
+                            <input type="number" class="form-control" id="stock" name="stock" value="<%= jewel.stock %>">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="matiere" class="form-label">Matière</label>
+                            <input type="text" class="form-control" id="matiere" name="matiere" value="<%= jewel.matiere %>">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="carat" class="form-label">Carat</label>
+                            <input type="number" class="form-control" id="carat" name="carat" value="<%= jewel.carat %>">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="taille" class="form-label">Taille</label>
+                            <input type="text" class="form-control" id="taille" name="taille" value="<%= jewel.taille %>">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Image</label>
+                            <input type="file" class="form-control" id="image" name="image">
+                            <% if (jewel.image) { %>
+                                <div class="mt-2">
+                                    <img src="<%= jewel.image %>" alt="<%= jewel.name %>" style="max-width: 100px;" class="img-thumbnail">
+                                    <p class="text-muted small">Image actuelle (laissez vide pour conserver)</p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="4"><%= jewel.description %></textarea>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="/admin/jewels" class="btn btn-secondary">Annuler</a>
+                    <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
