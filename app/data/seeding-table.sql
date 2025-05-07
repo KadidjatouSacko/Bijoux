@@ -1,6 +1,7 @@
 -- Début de la transaction
 BEGIN;
 
+<<<<<<< HEAD
 -- Suppression des tables si elles existent déjà
 DROP TABLE IF EXISTS "payment" CASCADE;
 DROP TABLE IF EXISTS "order_address" CASCADE;
@@ -112,3 +113,18 @@ VALUES
 
 -- Commit de la transaction
 COMMIT;
+=======
+INSERT INTO "category" ("name") VALUES
+('Bagues'),
+('Bracelets'),
+('Colliers'),
+('Boucles d''oreilles'),
+('Promotions');
+
+
+INSERT INTO "jewel" (name, description, price_ttc, tva, image, stock, category_id)
+VALUES ('Bracelet or rose', 'Superbe bracelet', 120.00, 20.00, 'bracelet.jpg', 10, 1);
+
+INSERT INTO "role" (name) 
+VALUES ('client'), ('administrateur');
+>>>>>>> c36308dee78a20a9c13e68d7addb716051f8a371

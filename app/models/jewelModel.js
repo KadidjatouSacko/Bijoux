@@ -7,6 +7,7 @@ import { Type } from './TypeModel.js';      // Assure-toi d'importer le modèle 
 
 export class Jewel extends Model {}
 
+<<<<<<< HEAD
 Jewel.init({
   name: {
     type: DataTypes.STRING(100),
@@ -99,3 +100,54 @@ Jewel.init({
 Jewel.belongsTo(Category, { foreignKey: 'category_id' });
 Jewel.belongsTo(Type, { foreignKey: 'type_id' });
 
+=======
+Jewel.init(
+  {
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    description: {
+      type: DataTypes.TEXT,
+    },
+    price_ttc: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
+    tva: {
+      type: DataTypes.DECIMAL(5, 2),
+      defaultValue: 20.0,
+    },
+    price_ht: {
+      type: DataTypes.DECIMAL(10, 2),
+    },
+    taille: {
+      type: DataTypes.STRING,
+    },
+    poids: {
+      type: DataTypes.DECIMAL(6, 2),
+    },
+    matiere: {
+      type: DataTypes.STRING,
+    },
+    carat: {
+      type: DataTypes.INTEGER,
+    },
+    image: {
+      type: DataTypes.TEXT,
+    },
+    stock: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    category_id: {
+      type: DataTypes.INTEGER,
+    },
+  },
+  {
+    sequelize,
+    tableName: "jewel",
+    timestamps: false,
+  }
+);
+>>>>>>> c36308dee78a20a9c13e68d7addb716051f8a371

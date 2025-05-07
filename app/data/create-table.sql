@@ -66,6 +66,11 @@ CREATE TABLE activities (
 );
 
 
+CREATE TABLE "role" (
+    "id" SERIAL PRIMARY KEY,
+    "name" VARCHAR(50) UNIQUE NOT NULL
+);
+
 -- 2. Table des bijoux
 -- Création de la table jewel
 CREATE TABLE "jewel" (
@@ -92,6 +97,7 @@ CREATE TABLE "jewel" (
 
 );
 
+<<<<<<< HEAD
 CREATE TABLE types (
   "id" SERIAL PRIMARY KEY,
   "name" VARCHAR(255) NOT NULL
@@ -112,6 +118,8 @@ CREATE TABLE orders (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+=======
+>>>>>>> c36308dee78a20a9c13e68d7addb716051f8a371
 
 -- 3. Table des clients
 CREATE TABLE "customer" (
@@ -175,6 +183,15 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+<<<<<<< HEAD
+=======
+
+CREATE TRIGGER trg_calcul_price_ht
+BEFORE INSERT OR UPDATE ON "jewel"
+FOR EACH ROW
+EXECUTE FUNCTION calcul_price_ht();
+
+>>>>>>> c36308dee78a20a9c13e68d7addb716051f8a371
 
 CREATE TRIGGER trg_calcul_price_ht
 BEFORE INSERT OR UPDATE ON "jewel"

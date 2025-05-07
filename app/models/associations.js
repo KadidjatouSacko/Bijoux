@@ -5,6 +5,7 @@ import { Order } from "./orderModel.js";
 import { OrderHasJewel } from "./OrderHasJewelModel.js";
 import { Payment } from "./paymentModel.js";
 import { Role } from "./roleModel.js";
+<<<<<<< HEAD
 import { Material } from "./MaterialModel.js";
 import { JewelImage } from "./jewelImage.js";
 import { Favorite } from "./favoritesModel.js";
@@ -13,6 +14,8 @@ import { JewelView } from "./jewelViewModel.js";
 import { OrderItem } from "./orderItem.js";
 import { Type } from "./TypeModel.js";
 import { Activity } from "./activityModel.js";
+=======
+>>>>>>> c36308dee78a20a9c13e68d7addb716051f8a371
 
 import { sequelize } from "./sequelize-client.js";
 // Définir les relations entre les modèles
@@ -95,6 +98,7 @@ Payment.belongsTo(Order, {
     foreignKey: 'order_id',
 });
 
+<<<<<<< HEAD
 // Jewel <-> Type
 Jewel.belongsTo(Type, {
   foreignKey: 'type_id', // La clé étrangère dans la table Jewel
@@ -170,3 +174,13 @@ Customer.hasMany(Favorite, { foreignKey: 'customer_id', as: 'favorites' });
   Activity.belongsTo(Customer, { foreignKey: 'customer_id' });
 
 export { Category, Jewel, Customer, Order, OrderHasJewel, Payment, JewelImage, OrderItem, Cart, JewelView, Favorite, Material, Type };
+=======
+Customer.belongsTo(Role, {
+     foreignKey: "role_id" 
+});
+Role.hasMany(Customer, {
+     foreignKey: "role_id"
+});
+
+export { Category, Jewel, Customer, Order, OrderHasJewel, Payment };
+>>>>>>> c36308dee78a20a9c13e68d7addb716051f8a371

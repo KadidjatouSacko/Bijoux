@@ -352,11 +352,18 @@ nav ul li a::after {
 }
 
 .product-img {
+<<<<<<< HEAD:public/css/bagues.css
     position: relative;
     width: 100%;
     height: 300px; /* Hauteur fixe ou adaptez selon vos besoins */
     overflow: hidden;
     background-color: #f9f9f9;
+=======
+    height: 250px;
+    background-size: cover;
+    background-position: center;
+    
+>>>>>>> c36308dee78a20a9c13e68d7addb716051f8a371:css/bagues.css
 }
 
 .product-img img {
