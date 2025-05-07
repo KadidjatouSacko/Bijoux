@@ -4,6 +4,7 @@ import { Customer } from "./customerModel.js";
 import { Order } from "./orderModel.js";
 import { OrderHasJewel } from "./OrderHasJewelModel.js";
 import { Payment } from "./paymentModel.js";
+import { Role } from "./roleModel.js";
 
 import { Material } from "./MaterialModel.js";
 import { JewelImage } from "./jewelImage.js";
@@ -177,4 +178,4 @@ Customer.hasMany(Favorite, { foreignKey: 'customer_id', as: 'favorites' });
   Role.hasMany(Customer, {
        foreignKey: "role_id"
   });
-export { Category, Jewel, Customer, Order, OrderHasJewel, Payment, JewelImage, OrderItem, Cart, JewelView, Favorite, Material, Type };
+export { Category, Jewel, Customer, Order, OrderHasJewel, Payment, JewelImage, OrderItem, Cart, JewelView, Favorite, Material, Type, Role };
